@@ -1,14 +1,19 @@
+import React from 'react';
+import './app.css';
+import Header from './components/Header';
+import Sidebar from './components/Sidebar';
+import LiveFeed from './components/LiveFeed';
 
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
-
-export default function App() {
+function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-
-      </Routes>
-    </Router>
+    <div className="w-full flex flex-col border">
+      <Header />
+      <div className="main-content border-2 ">
+        <Sidebar />
+        <LiveFeed />
+      </div>
+    </div>
   );
 }
+
+export default App;

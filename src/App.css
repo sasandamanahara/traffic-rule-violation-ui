@@ -1,1 +1,71 @@
 @import "tailwindcss";
+
+body {
+    background-color: #121c2c;
+    color: #fff;
+    font-family: sans-serif;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.header {
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1f2d3d;
+}
+
+.main-content {
+    display: flex;
+    flex: 1;
+}
+
+.sidebar {
+    width: 300px;
+    padding: 20px;
+    background-color: #1a2533;
+}
+
+.live-feed {
+    flex: 1;
+    position: relative;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.bounding-box.car {
+    position: absolute;
+    top: 40%;
+    left: 45%;
+    width: 80px;
+    height: 80px;
+    border: 2px solid cyan;
+}
+
+.line {
+    position: absolute;
+    top: 65%;
+    left: 15%;
+    width: 70%;
+    height: 5px;
+    background-color: blue;
+}
+
+.signal-status {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: lime;
+    font-weight: bold;
+}

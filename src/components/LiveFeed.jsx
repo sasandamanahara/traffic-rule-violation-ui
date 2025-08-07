@@ -118,7 +118,7 @@ export default function LiveFeed() {
                 <div className="lg:col-span-1">
                     <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 h-full">
                         <h3 className="text-lg font-semibold mb-4">Camera Settings</h3>
-                        
+
                         <div className="space-y-3 mb-6">
                             {cameraSettings.map((setting) => {
                                 const Icon = setting.icon;
@@ -142,7 +142,7 @@ export default function LiveFeed() {
                         <button
                             onClick={captureAndSend}
                             disabled={isCapturing}
-                            className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
+                            className="w-full bg-green-600 text-black px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
                         >
                             {isCapturing ? (
                                 <>
@@ -175,7 +175,7 @@ export default function LiveFeed() {
                         <div className="px-6 py-4 border-b border-gray-700">
                             <h3 className="text-lg font-semibold">Live Detection</h3>
                         </div>
-                        
+
                         <div className="p-6 h-full">
                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 h-full">
                                 {/* Camera Feed */}
@@ -210,14 +210,14 @@ export default function LiveFeed() {
                                 <div className="xl:col-span-1">
                                     <div className="bg-gray-700 rounded-lg p-4 h-full overflow-auto">
                                         <h4 className="text-md font-medium text-white mb-4">Detection Results</h4>
-                                        
+
                                         <div className="space-y-4">
                                             {capturedImage && (
                                                 <div>
                                                     <h5 className="text-sm font-medium text-gray-300 mb-2">Captured Image</h5>
-                                                    <img 
-                                                        src={capturedImage} 
-                                                        alt="Captured" 
+                                                    <img
+                                                        src={capturedImage}
+                                                        alt="Captured"
                                                         className="w-full rounded-lg border border-gray-600"
                                                     />
                                                 </div>
@@ -245,13 +245,13 @@ export default function LiveFeed() {
                                                             <p className="text-gray-400">No violations detected</p>
                                                         )}
                                                     </div>
-                                                    
+
                                                     {detectionResults.image_url && (
                                                         <div className="mt-4">
                                                             <h5 className="text-sm font-medium text-gray-300 mb-2">Processed Image</h5>
-                                                            <img 
-                                                                src={detectionResults.image_url} 
-                                                                alt="Processed" 
+                                                            <img
+                                                                src={detectionResults.image_url}
+                                                                alt="Processed"
                                                                 className="w-full rounded-lg border border-gray-600"
                                                             />
                                                         </div>

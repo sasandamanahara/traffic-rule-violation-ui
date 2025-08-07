@@ -50,7 +50,7 @@ export default function VideoDetection() {
 
         try {
             console.log('Starting video processing...');
-            
+
             // Simulate processing progress
             const progressInterval = setInterval(() => {
                 setProcessingProgress(prev => {
@@ -62,7 +62,7 @@ export default function VideoDetection() {
                 });
             }, 500);
 
-                               const response = await fetch('http://localhost:5000/process-video', {
+            const response = await fetch('http://localhost:5000/process-video', {
                 method: 'POST',
                 body: formData
             });
@@ -176,7 +176,7 @@ export default function VideoDetection() {
                 <div className="md:col-span-1">
                     <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 h-full">
                         <h3 className="text-lg font-semibold mb-4">Video Upload</h3>
-                        
+
                         {/* File Upload Section */}
                         <div className="mb-6">
                             <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center">
@@ -200,7 +200,7 @@ export default function VideoDetection() {
                                     Choose Video File
                                 </label>
                             </div>
-                            
+
                             {selectedFile && (
                                 <div className="mt-4 p-4 bg-gray-700 rounded-lg">
                                     <div className="flex items-center justify-between">
@@ -252,7 +252,7 @@ export default function VideoDetection() {
                             <button
                                 onClick={processVideo}
                                 disabled={!selectedFile || isProcessing}
-                                className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
+                                className="w-full bg-green-600 text-black px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
                             >
                                 {isProcessing ? (
                                     <>
@@ -311,7 +311,7 @@ export default function VideoDetection() {
                                 </button>
                             </div>
                         </div>
-                        
+
                         <div className="space-y-6">
                             {results ? (
                                 <>
@@ -340,7 +340,7 @@ export default function VideoDetection() {
                                         <div className="bg-gray-700 rounded-lg p-4">
                                             <h4 className="text-gray-400 text-sm font-medium">Detection Rate</h4>
                                             <p className="text-2xl font-bold text-blue-400">
-                                                {detectionStats.totalFrames > 0 
+                                                {detectionStats.totalFrames > 0
                                                     ? ((detectionStats.processedFrames / detectionStats.totalFrames) * 100).toFixed(1)
                                                     : 0}%
                                             </p>

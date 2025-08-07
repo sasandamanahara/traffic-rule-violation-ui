@@ -423,9 +423,17 @@ export default function VideoDetection() {
                                                         style={{ maxWidth: 320 }}
                                                     />
                                                     <div className="w-full">
-                                                        <p className="text-white font-semibold mb-1">{violation.type} Violation</p>
+                                                        <p className="text-white font-semibold mb-1">
+                                                            {violation.type} Violation
+                                                            {violation.type === 'Number Plate' && (
+                                                                <span className="ml-2 inline-block px-2 py-0.5 text-xs bg-green-700 text-white rounded">Number Plate</span>
+                                                            )}
+                                                        </p>
                                                         <p className="text-gray-400 text-sm mb-1">Frame: {violation.frame}, Time: {violation.timestamp}s</p>
                                                         <p className="text-gray-400 text-sm mb-1">Confidence: {(violation.confidence * 100).toFixed(2)}%</p>
+                                                        {violation.type === 'Number Plate' && (
+                                                            <p className="text-blue-400 text-sm mb-1">Plate: {violation.plate_text || <span className='italic text-gray-500'>[not extracted]</span>}</p>
+                                                        )}
                                                     </div>
                                                 </div>
                                             ))}

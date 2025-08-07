@@ -432,7 +432,12 @@ export default function VideoDetection() {
                                                         <p className="text-gray-400 text-sm mb-1">Frame: {violation.frame}, Time: {violation.timestamp}s</p>
                                                         <p className="text-gray-400 text-sm mb-1">Confidence: {(violation.confidence * 100).toFixed(2)}%</p>
                                                         {violation.type === 'Number Plate' && (
-                                                            <p className="text-blue-400 text-sm mb-1">Plate: {violation.plate_text || <span className='italic text-gray-500'>[not extracted]</span>}</p>
+                                                            <>
+                                                                <p className="text-blue-400 text-sm mb-1">
+                                                                    Plate: {violation.plate_text && violation.plate_text.trim() ? violation.plate_text.trim() : <span className='italic text-gray-500'>[not detected]</span>}
+                                                                </p>
+                                                                <pre className="text-xs text-gray-500 bg-gray-800 rounded p-2 mt-1">Raw: {JSON.stringify(violation.plate_text)}</pre>
+                                                            </>
                                                         )}
                                                     </div>
                                                 </div>

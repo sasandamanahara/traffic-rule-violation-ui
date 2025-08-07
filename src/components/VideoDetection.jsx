@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Upload, Play, Pause, Square, Download, AlertTriangle, CheckCircle, FileText, Clock } from 'lucide-react';
 
 export default function VideoDetection() {
@@ -14,6 +14,9 @@ export default function VideoDetection() {
         processingTime: 0
     });
     const fileInputRef = useRef(null);
+    const videoRef = useRef(null);
+    const canvasRef = useRef(null);
+    const [currentFrame, setCurrentFrame] = useState(0);
 
     const handleFileSelect = (event) => {
         const file = event.target.files[0];
@@ -59,7 +62,7 @@ export default function VideoDetection() {
                 });
             }, 500);
 
-                               const response = await fetch('http://localhost:5002/process-video', {
+                               const response = await fetch('http://localhost:5000/process-video', {
                 method: 'POST',
                 body: formData
             });
@@ -127,6 +130,33 @@ export default function VideoDetection() {
             icon: Upload
         }
     ];
+
+    // Draw bounding boxes on the canvas for the current frame
+    useEffect(() => {
+        if (!results || !results.violations || !videoRef.current || !canvasRef.current) return;
+        const ctx = canvasRef.current.getContext('2d');
+        ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+        const video = videoRef.current;
+        // Find violations for the current frame
+        const frameViolations = results.violations.filter(v => v.frame === currentFrame);
+        frameViolations.forEach(v => {
+            const [x1, y1, x2, y2] = v.bbox;
+            ctx.strokeStyle = v.type === 'Helmet' ? 'yellow' : v.type === 'Triple Riding' ? 'red' : 'blue';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+            ctx.font = '16px Arial';
+            ctx.fillStyle = ctx.strokeStyle;
+            ctx.fillText(`${v.type} (${(v.confidence * 100).toFixed(1)}%)`, x1, y1 - 5);
+        });
+    }, [results, currentFrame]);
+
+    // Update current frame as video plays
+    const handleTimeUpdate = () => {
+        if (!videoRef.current || !results) return;
+        const video = videoRef.current;
+        const fps = results.totalFrames / (video.duration || 1);
+        setCurrentFrame(Math.floor(video.currentTime * fps));
+    };
 
     return (
         <div className="h-full p-6 overflow-auto">
@@ -352,6 +382,33 @@ export default function VideoDetection() {
                                             </div>
                                         ) : (
                                             <p className="text-gray-400">No violations detected in this video.</p>
+                                        )}
+                                    </div>
+                                    {/* Video Player with Canvas Overlay */}
+                                    <div className="relative w-full max-w-2xl mx-auto mb-6">
+                                        {selectedFile && (
+                                            <>
+                                                <video
+                                                    ref={videoRef}
+                                                    src={URL.createObjectURL(selectedFile)}
+                                                    width="640"
+                                                    height="360"
+                                                    controls
+                                                    onTimeUpdate={handleTimeUpdate}
+                                                    style={{ display: 'block' }}
+                                                />
+                                                <canvas
+                                                    ref={canvasRef}
+                                                    width={640}
+                                                    height={360}
+                                                    style={{
+                                                        position: 'absolute',
+                                                        left: 0,
+                                                        top: 0,
+                                                        pointerEvents: 'none',
+                                                    }}
+                                                />
+                                            </>
                                         )}
                                     </div>
                                 </>

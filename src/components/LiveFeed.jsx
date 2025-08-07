@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Webcam from 'react-webcam';
 import { Camera, Settings, AlertTriangle, CheckCircle, Clock, Activity } from 'lucide-react';
 
@@ -8,6 +8,7 @@ export default function LiveFeed() {
     const [detectionResults, setDetectionResults] = useState(null);
     const [error, setError] = useState(null);
     const webcamRef = useRef(null);
+    const canvasRef = useRef(null);
 
     const captureAndSend = useCallback(async () => {
         if (!webcamRef.current) return;
@@ -48,6 +49,29 @@ export default function LiveFeed() {
             setIsCapturing(false);
         }
     }, []);
+
+    // Draw bounding boxes on the canvas for the captured image
+    useEffect(() => {
+        if (!detectionResults || !detectionResults.detections || !canvasRef.current || !capturedImage) return;
+        const img = new window.Image();
+        img.src = capturedImage;
+        img.onload = () => {
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            detectionResults.detections.forEach(d => {
+                if (!d.bbox) return;
+                const [x1, y1, x2, y2] = d.bbox;
+                ctx.strokeStyle = d.class_id === 0 ? 'blue' : d.class_id === 1 ? 'yellow' : 'red';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+                ctx.font = '16px Arial';
+                ctx.fillStyle = ctx.strokeStyle;
+                ctx.fillText(`Class ${d.class_id} (${(d.confidence * 100).toFixed(1)}%)`, x1, y1 - 5);
+            });
+        };
+    }, [detectionResults, capturedImage]);
 
     const cameraSettings = [
         {
@@ -164,6 +188,20 @@ export default function LiveFeed() {
                                                 screenshotFormat="image/jpeg"
                                                 className="w-full h-full object-cover rounded-lg"
                                             />
+                                            {/* Canvas overlay for captured image */}
+                                            {capturedImage && (
+                                                <canvas
+                                                    ref={canvasRef}
+                                                    width={640}
+                                                    height={480}
+                                                    style={{
+                                                        position: 'absolute',
+                                                        left: 0,
+                                                        top: 0,
+                                                        pointerEvents: 'none',
+                                                    }}
+                                                />
+                                            )}
                                         </div>
                                     </div>
                                 </div>

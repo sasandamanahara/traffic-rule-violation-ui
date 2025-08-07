@@ -411,6 +411,26 @@ export default function VideoDetection() {
                                             </>
                                         )}
                                     </div>
+                                    {/* Snapshot Cards Grid */}
+                                    {results && results.violations && results.violations.length > 0 && (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
+                                            {results.violations.map((violation, idx) => (
+                                                <div key={idx} className="bg-gray-900 rounded-lg shadow border border-gray-700 p-4 flex flex-col items-center">
+                                                    <img
+                                                        src={violation.snapshot_url}
+                                                        alt={`Snapshot frame ${violation.frame}`}
+                                                        className="w-full h-40 object-cover rounded mb-3 border border-gray-600"
+                                                        style={{ maxWidth: 320 }}
+                                                    />
+                                                    <div className="w-full">
+                                                        <p className="text-white font-semibold mb-1">{violation.type} Violation</p>
+                                                        <p className="text-gray-400 text-sm mb-1">Frame: {violation.frame}, Time: {violation.timestamp}s</p>
+                                                        <p className="text-gray-400 text-sm mb-1">Confidence: {(violation.confidence * 100).toFixed(2)}%</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </>
                             ) : (
                                 <div className="text-gray-400 text-center py-8">

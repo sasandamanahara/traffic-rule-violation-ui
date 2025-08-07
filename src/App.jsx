@@ -1,18 +1,42 @@
-import React from 'react';
-import './app.css';
-import Header from './components/Header';
-import Sidebar from './components/Sidebar';
+import React, { useState } from 'react';
+import './App.css';
+import Layout from './components/Layout';
+import Dashboard from './components/Dashboard';
 import LiveFeed from './components/LiveFeed';
+import VideoDetection from './components/VideoDetection';
+import ViolationList from './components/ViolationList';
+import CameraMap from './components/CameraMap';
+import Reports from './components/Reports';
+import Settings from './components/Settings';
 
 function App() {
+  const [activeTab, setActiveTab] = useState('dashboard');
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return <Dashboard />;
+      case 'live-feed':
+        return <LiveFeed />;
+      case 'video-detection':
+        return <VideoDetection />;
+      case 'violations':
+        return <ViolationList />;
+      case 'map':
+        return <CameraMap />;
+      case 'reports':
+        return <Reports />;
+      case 'settings':
+        return <Settings />;
+      default:
+        return <Dashboard />;
+    }
+  };
+
   return (
-    <div className="w-full flex flex-col border">
-      <Header />
-      <div className="main-content border-2 ">
-        <Sidebar />
-        <LiveFeed />
-      </div>
-    </div>
+    <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
+      {renderContent()}
+    </Layout>
   );
 }
 

@@ -8,6 +8,7 @@ import ViolationList from './components/ViolationList';
 import CameraMap from './components/CameraMap';
 import Reports from './components/Reports';
 import Settings from './components/Settings';
+import CameraSetup from './components/DrawingLanes';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -28,6 +29,8 @@ function App() {
         return <Reports />;
       case 'settings':
         return <Settings />;
+      case 'camera-setup':
+        return <CameraSetup />;
       default:
         return <Dashboard />;
     }

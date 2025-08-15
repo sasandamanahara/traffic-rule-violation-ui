@@ -88,6 +88,16 @@ export default function Layout({ children, activeTab, setActiveTab }) {
                             <FileText className="w-5 h-5 flex-shrink-0" />
                             <span className="truncate">Reports & Export</span>
                         </button>
+                        <button
+                            onClick={() => setActiveTab('camera-setup')}
+                            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'reports'
+                                ? 'bg-gray-700 text-black'
+                                : 'text-black hover:bg-gray-700 '
+                                }`}
+                        >
+                            <FileText className="w-5 h-5 flex-shrink-0" />
+                            <span className="truncate">Camera Setup</span>
+                        </button>
                     </nav>
 
                     <div className="p-4 border-t border-gray-700">

@@ -79,60 +79,60 @@ export default function DrawingLanes() {
 
 
   const exportFullLine = () => {
-  if (!canvasRef.current) return;
-  const canvas = canvasRef.current;
-  const ctx = canvas.getContext("2d");
-  const width = canvas.width;
-  const height = canvas.height;
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const width = canvas.width;
+    const height = canvas.height;
 
-  // Get all pixels from canvas
-  const imageData = ctx.getImageData(0, 0, width, height);
-  const allPixels = [];
+    // Get all pixels from canvas
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const allPixels = [];
 
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const idx = (y * width + x) * 4;
-      const r = imageData.data[idx];
-      const g = imageData.data[idx + 1];
-      const b = imageData.data[idx + 2];
-      const a = imageData.data[idx + 3];
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const idx = (y * width + x) * 4;
+        const r = imageData.data[idx];
+        const g = imageData.data[idx + 1];
+        const b = imageData.data[idx + 2];
+        const a = imageData.data[idx + 3];
 
-      // Assuming line color is red
-      if (r > 200 && g < 50 && b < 50 && a > 0) {
-        allPixels.push({ x, y });
+        // Assuming line color is red
+        if (r > 200 && g < 50 && b < 50 && a > 0) {
+          allPixels.push({ x, y });
+        }
       }
     }
-  }
 
-  // Control points (clicked points) — assuming you have lines array
-  const controlPoints = lines; // lines = array of lines, each line = array of {x, y}
+    // Control points (clicked points) — assuming you have lines array
+    const controlPoints = lines; // lines = array of lines, each line = array of {x, y}
 
-  // Combine both
-  const dataToExport = {
-    pixels: allPixels,
-    points: controlPoints
+    // Combine both
+    const dataToExport = {
+      pixels: allPixels,
+      points: controlPoints
+    };
+
+    // Copy to clipboard
+    navigator.clipboard.writeText(JSON.stringify(dataToExport))
+      .then(() => alert("Full line exported to clipboard!"));
+
+    // Optional: download as file
+    const blob = new Blob([JSON.stringify(dataToExport)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "full_line.json";
+    a.click();
+    URL.revokeObjectURL(url);
   };
-
-  // Copy to clipboard
-  navigator.clipboard.writeText(JSON.stringify(dataToExport))
-    .then(() => alert("Full line exported to clipboard!"));
-
-  // Optional: download as file
-  const blob = new Blob([JSON.stringify(dataToExport)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "full_line.json";
-  a.click();
-  URL.revokeObjectURL(url);
-};
 
 
 
   return (
     <div>
-      <div style={{ marginBottom: "10px" }}>
-        <button onClick={handleAddLine} style={{ marginRight: "10px" }}>
+      <div className="text-black space-x-2 py-2" >
+        <button onClick={handleAddLine} >
           ➕ Add New Line
         </button>
         <button onClick={handleUndo} disabled={lines[activeLineIndex].length === 0}>

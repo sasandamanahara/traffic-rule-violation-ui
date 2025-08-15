@@ -77,8 +77,7 @@ export default function DrawingLanes() {
     }
   };
 
-
-  const exportFullLine = () => {
+  const exportFullLine = async () => {
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -104,20 +103,37 @@ export default function DrawingLanes() {
       }
     }
 
-    // Control points (clicked points) — assuming you have lines array
-    const controlPoints = lines; // lines = array of lines, each line = array of {x, y}
+    const controlPoints = lines;
 
-    // Combine both
     const dataToExport = {
       pixels: allPixels,
-      points: controlPoints
+      points: controlPoints,
     };
 
-    // Copy to clipboard
-    navigator.clipboard.writeText(JSON.stringify(dataToExport))
-      .then(() => alert("Full line exported to clipboard!"));
+    // POST to API
+    try {
+      const response = await fetch("http://localhost:5000/api/lanes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataToExport),
+      });
+      if (response.ok) {
+        alert("Lanes data posted to API!");
+      } else {
+        alert("Failed to post lanes data.");
+      }
+    } catch (error) {
+      alert("Error posting lanes data.");
+      console.error(error);
+    }
 
-    // Optional: download as file
+    // Optional: still copy to clipboard and download as file
+    navigator.clipboard.writeText(JSON.stringify(dataToExport)).then(() => {
+      alert("Full line exported to clipboard!");
+    });
+
     const blob = new Blob([JSON.stringify(dataToExport)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -127,14 +143,10 @@ export default function DrawingLanes() {
     URL.revokeObjectURL(url);
   };
 
-
-
   return (
     <div>
-      <div className="text-black space-x-2 py-2" >
-        <button onClick={handleAddLine} >
-          ➕ Add New Line
-        </button>
+      <div className="text-black space-x-2 py-2">
+        <button onClick={handleAddLine}>➕ Add New Line</button>
         <button onClick={handleUndo} disabled={lines[activeLineIndex].length === 0}>
           ⟲ Undo
         </button>

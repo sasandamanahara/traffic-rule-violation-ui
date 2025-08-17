@@ -100,7 +100,6 @@ export default function DrawingLanes({ selectedVideo }) {
   };
 
   const exportFullLine = async () => {
-
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -144,15 +143,15 @@ export default function DrawingLanes({ selectedVideo }) {
         body: formData,
       });
       if (response.ok) {
-        if (response.ok) {
+        if (processedVideo == null) {
           const data = await response.json();
           const outputVideo = `http://localhost:5000/${data.output_video}`;
 
           // Update state to show video
           setProcessedVideo(outputVideo);
-        } else {
-          alert("Failed to post data.");
         }
+      } else {
+        alert("Failed to post data.");
       }
     } catch (error) {
       console.error(error);
@@ -164,20 +163,19 @@ export default function DrawingLanes({ selectedVideo }) {
     <div>
       {processedVideo ? (
         <video width="320" height="240" controls preload="auto">
-      <source src={processedVideo} type="video/mp4" />
-      <track
-        src="/path/to/captions.vtt"
-        kind="subtitles"
-        srcLang="en"
-        label="English"
-      />
-      Your browser does not support the video tag.
-    </video>
+          <source src={processedVideo} type="video/mp4" />
+          <track
+            src="/path/to/captions.vtt"
+            kind="subtitles"
+            srcLang="en"
+            label="English"
+          />
+          Your browser does not support the video tag.
+        </video>
       ) : (
         // Drawing/canvas section
         <>
           <div className="text-black space-x-2 py-2">
-
             <button onClick={handleAddLine}>➕ Add New Line</button>
             <button
               onClick={handleUndo}
@@ -260,40 +258,3 @@ function pointToSegmentDistance(px, py, p1, p2) {
   const dy = py - yy;
   return Math.sqrt(dx * dx + dy * dy);
 }
-
-// import { useState } from "react";
-
-// export default function DrawingLanes({ selectedVideo }) {
-//   const [videoFile, setVideoFile] = useState(null);
-
-//   const handleFileChange = async (e) => {
-//     // const outputVideo = `http://localhost:5000/processed/annotated_output.mp4`;
-//     const response = await fetch(
-//     "http://localhost:5000/processed/annotated_output.mp4"
-//   );
-//   // const blob = await response.blob(); // get full video content
-//   // const url = URL.createObjectURL(blob);
-//   // console.log(url);
-//   console.log("Video URL:", response);
-//   setVideoFile(response.url);
-//   };
-
-//   return (
-//     <div
-//       style={{ maxWidth: "700px", margin: "20px auto", textAlign: "center" }}
-//     >
-//       <h2>Select a Video to Play</h2>
-//       <input type="file" accept="video/*" onChange={handleFileChange} />
-
-//       {videoFile && (
-//         <video
-//           width="640"
-//           height="360"
-//           controls
-//           style={{ display: "block", marginTop: "20px" }}
-//           src={videoFile}
-//         />
-//       )}
-//     </div>
-//   );
-// }

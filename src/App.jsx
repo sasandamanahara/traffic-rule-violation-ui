@@ -12,6 +12,7 @@ import CameraSetup from './components/DrawingLanes';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -20,7 +21,7 @@ function App() {
       case 'live-feed':
         return <LiveFeed />;
       case 'video-detection':
-        return <VideoDetection />;
+        return <VideoDetection setActiveTab={setActiveTab} setSelectedVideo={setSelectedVideo}/>;
       case 'violations':
         return <ViolationList />;
       case 'map':
@@ -30,7 +31,7 @@ function App() {
       case 'settings':
         return <Settings />;
       case 'camera-setup':
-        return <CameraSetup />;
+        return <CameraSetup selectedVideo={selectedVideo}/>;
       default:
         return <Dashboard />;
     }

@@ -1,19 +1,39 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function DrawingLanes() {
+export default function DrawingLanes({ selectedVideo }) {
   const canvasRef = useRef(null);
   const [lines, setLines] = useState([[]]); // Array of lines
   const [activeLineIndex, setActiveLineIndex] = useState(0);
   const [image, setImage] = useState(null);
 
-  // Load image
-  useEffect(() => {
-    const img = new Image();
-    img.src = "/6.jpg";
-    img.onload = () => setImage(img);
-  }, []);
+useEffect(() => {
+    if (!selectedVideo) return;
 
-  // Redraw everything
+    const video = document.createElement("video");
+    video.src = URL.createObjectURL(selectedVideo);
+    video.crossOrigin = "anonymous";
+    video.preload = "auto";
+
+    // Wait until metadata is loaded (dimensions)
+    video.addEventListener("loadedmetadata", () => {
+      video.currentTime = 0; // go to first frame
+    });
+
+    // When the first frame is ready
+    video.addEventListener("seeked", () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const img = new Image();
+      img.src = canvas.toDataURL("image/png");
+      img.onload = () => setImage(img);
+    });
+  }, [selectedVideo]);
+
+  // Redraw everything (existing logic)
   useEffect(() => {
     if (!image || !canvasRef.current) return;
     const canvas = canvasRef.current;
@@ -77,73 +97,59 @@ export default function DrawingLanes() {
     }
   };
 
-  const exportFullLine = async () => {
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const width = canvas.width;
-    const height = canvas.height;
+const exportFullLine = async () => {
+  if (!canvasRef.current) return;
+  const canvas = canvasRef.current;
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width;
+  const height = canvas.height;
 
-    // Get all pixels from canvas
-    const imageData = ctx.getImageData(0, 0, width, height);
-    const allPixels = [];
+  // Get all pixels from canvas
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const allPixels = [];
 
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const idx = (y * width + x) * 4;
-        const r = imageData.data[idx];
-        const g = imageData.data[idx + 1];
-        const b = imageData.data[idx + 2];
-        const a = imageData.data[idx + 3];
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = (y * width + x) * 4;
+      const r = imageData.data[idx];
+      const g = imageData.data[idx + 1];
+      const b = imageData.data[idx + 2];
+      const a = imageData.data[idx + 3];
 
-        // Assuming line color is red
-        if (r > 200 && g < 50 && b < 50 && a > 0) {
-          allPixels.push({ x, y });
-        }
+      if (r > 200 && g < 50 && b < 50 && a > 0) {
+        allPixels.push({ x, y });
       }
     }
+  }
 
-    const controlPoints = lines;
+  const controlPoints = lines;
+  const dataToExport = { pixels: allPixels, points: controlPoints };
 
-    const dataToExport = {
-      pixels: allPixels,
-      points: controlPoints,
-    };
+  // Create a Blob from JSON
+  const jsonBlob = new Blob([JSON.stringify(dataToExport)], { type: "application/json" });
 
-    // POST to API
-    try {
-      const response = await fetch("http://localhost:5000/api/lanes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(dataToExport),
-      });
-      if (response.ok) {
-        alert("Lanes data posted to API!");
-      } else {
-        alert("Failed to post lanes data.");
-      }
-    } catch (error) {
-      alert("Error posting lanes data.");
-      console.error(error);
-    }
+  const formData = new FormData();
+  formData.append("video", selectedVideo);
+  formData.append("pixels_file", jsonBlob, "lane_data.json"); // send as file
 
-    // Optional: still copy to clipboard and download as file
-    navigator.clipboard.writeText(JSON.stringify(dataToExport)).then(() => {
-      alert("Full line exported to clipboard!");
+  // POST to API
+  try {
+    const response = await fetch("http://localhost:5000/api/lanes", {
+      method: "POST",
+      body: formData,
     });
+    if (response.ok) {
+      alert("Video and lane data posted successfully!");
+    } else {
+      alert("Failed to post data.");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Error posting data.");
+  }
+};
 
-    const blob = new Blob([JSON.stringify(dataToExport)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "full_line.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  return (
+return (
     <div>
       <div className="text-black space-x-2 py-2">
         <button onClick={handleAddLine}>➕ Add New Line</button>
@@ -221,3 +227,8 @@ function pointToSegmentDistance(px, py, p1, p2) {
   const dy = py - yy;
   return Math.sqrt(dx * dx + dy * dy);
 }
+
+
+
+
+

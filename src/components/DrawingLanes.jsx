@@ -5,8 +5,10 @@ export default function DrawingLanes({ selectedVideo }) {
   const [lines, setLines] = useState([[]]); // Array of lines
   const [activeLineIndex, setActiveLineIndex] = useState(0);
   const [image, setImage] = useState(null);
+  const [processedVideo, setProcessedVideo] = useState(null);
+  const videoRef = useRef(null);
 
-useEffect(() => {
+  useEffect(() => {
     if (!selectedVideo) return;
 
     const video = document.createElement("video");
@@ -97,73 +99,104 @@ useEffect(() => {
     }
   };
 
-const exportFullLine = async () => {
-  if (!canvasRef.current) return;
-  const canvas = canvasRef.current;
-  const ctx = canvas.getContext("2d");
-  const width = canvas.width;
-  const height = canvas.height;
+  const exportFullLine = async () => {
 
-  // Get all pixels from canvas
-  const imageData = ctx.getImageData(0, 0, width, height);
-  const allPixels = [];
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const width = canvas.width;
+    const height = canvas.height;
 
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const idx = (y * width + x) * 4;
-      const r = imageData.data[idx];
-      const g = imageData.data[idx + 1];
-      const b = imageData.data[idx + 2];
-      const a = imageData.data[idx + 3];
+    // Get all pixels from canvas
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const allPixels = [];
 
-      if (r > 200 && g < 50 && b < 50 && a > 0) {
-        allPixels.push({ x, y });
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const idx = (y * width + x) * 4;
+        const r = imageData.data[idx];
+        const g = imageData.data[idx + 1];
+        const b = imageData.data[idx + 2];
+        const a = imageData.data[idx + 3];
+
+        if (r > 200 && g < 50 && b < 50 && a > 0) {
+          allPixels.push({ x, y });
+        }
       }
     }
-  }
 
-  const controlPoints = lines;
-  const dataToExport = { pixels: allPixels, points: controlPoints };
+    const controlPoints = lines;
+    const dataToExport = { pixels: allPixels, points: controlPoints };
 
-  // Create a Blob from JSON
-  const jsonBlob = new Blob([JSON.stringify(dataToExport)], { type: "application/json" });
-
-  const formData = new FormData();
-  formData.append("video", selectedVideo);
-  formData.append("pixels_file", jsonBlob, "lane_data.json"); // send as file
-
-  // POST to API
-  try {
-    const response = await fetch("http://localhost:5000/api/lanes", {
-      method: "POST",
-      body: formData,
+    // Create a Blob from JSON
+    const jsonBlob = new Blob([JSON.stringify(dataToExport)], {
+      type: "application/json",
     });
-    if (response.ok) {
-      alert("Video and lane data posted successfully!");
-    } else {
-      alert("Failed to post data.");
-    }
-  } catch (error) {
-    console.error(error);
-    alert("Error posting data.");
-  }
-};
 
-return (
+    const formData = new FormData();
+    formData.append("video", selectedVideo);
+    formData.append("pixels_file", jsonBlob, "lane_data.json"); // send as file
+
+    // POST to API
+    try {
+      const response = await fetch("http://localhost:5000/api/lanes", {
+        method: "POST",
+        body: formData,
+      });
+      if (response.ok) {
+        if (response.ok) {
+          const data = await response.json();
+          const outputVideo = `http://localhost:5000/${data.output_video}`;
+
+          // Update state to show video
+          setProcessedVideo(outputVideo);
+        } else {
+          alert("Failed to post data.");
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error posting data.");
+    }
+  };
+
+  return (
     <div>
-      <div className="text-black space-x-2 py-2">
-        <button onClick={handleAddLine}>➕ Add New Line</button>
-        <button onClick={handleUndo} disabled={lines[activeLineIndex].length === 0}>
-          ⟲ Undo
-        </button>
-        <button onClick={exportFullLine}>🖌 Get Pixels</button>
-      </div>
-      <p>Drawing line #{activeLineIndex + 1}</p>
-      <canvas
-        ref={canvasRef}
-        onClick={handleClick}
-        style={{ border: "1px solid black", cursor: "crosshair" }}
+      {processedVideo ? (
+        <video width="320" height="240" controls preload="auto">
+      <source src={processedVideo} type="video/mp4" />
+      <track
+        src="/path/to/captions.vtt"
+        kind="subtitles"
+        srcLang="en"
+        label="English"
       />
+      Your browser does not support the video tag.
+    </video>
+      ) : (
+        // Drawing/canvas section
+        <>
+          <div className="text-black space-x-2 py-2">
+
+            <button onClick={handleAddLine}>➕ Add New Line</button>
+            <button
+              onClick={handleUndo}
+              disabled={lines[activeLineIndex].length === 0}
+            >
+              ⟲ Undo
+            </button>
+            <button onClick={exportFullLine}>
+              🖌 Check Direction Violation
+            </button>
+          </div>
+          <p>Drawing line #{activeLineIndex + 1}</p>
+          <canvas
+            ref={canvasRef}
+            onClick={handleClick}
+            style={{ border: "1px solid black", cursor: "crosshair" }}
+          />
+        </>
+      )}
     </div>
   );
 }
@@ -228,7 +261,39 @@ function pointToSegmentDistance(px, py, p1, p2) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
+// import { useState } from "react";
 
+// export default function DrawingLanes({ selectedVideo }) {
+//   const [videoFile, setVideoFile] = useState(null);
 
+//   const handleFileChange = async (e) => {
+//     // const outputVideo = `http://localhost:5000/processed/annotated_output.mp4`;
+//     const response = await fetch(
+//     "http://localhost:5000/processed/annotated_output.mp4"
+//   );
+//   // const blob = await response.blob(); // get full video content
+//   // const url = URL.createObjectURL(blob);
+//   // console.log(url);
+//   console.log("Video URL:", response);
+//   setVideoFile(response.url);
+//   };
 
+//   return (
+//     <div
+//       style={{ maxWidth: "700px", margin: "20px auto", textAlign: "center" }}
+//     >
+//       <h2>Select a Video to Play</h2>
+//       <input type="file" accept="video/*" onChange={handleFileChange} />
 
+//       {videoFile && (
+//         <video
+//           width="640"
+//           height="360"
+//           controls
+//           style={{ display: "block", marginTop: "20px" }}
+//           src={videoFile}
+//         />
+//       )}
+//     </div>
+//   );
+// }

@@ -138,14 +138,14 @@ export default function DrawingLanes({ selectedVideo }) {
 
     // POST to API
     try {
-      const response = await fetch("http://localhost:5000/api/lanes", {
+      const response = await fetch("http://localhost:5001/api/lanes", {
         method: "POST",
         body: formData,
       });
       if (response.ok) {
         if (processedVideo == null) {
           const data = await response.json();
-          const outputVideo = `http://localhost:5000/${data.output_video}`;
+          const outputVideo = `http://localhost:5001/${data.output_video}`;
 
           // Update state to show video
           setProcessedVideo(outputVideo);

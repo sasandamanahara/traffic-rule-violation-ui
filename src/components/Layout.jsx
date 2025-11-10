@@ -1,7 +1,13 @@
 import React from 'react';
-import { Home, Camera, AlertTriangle, MapPin, FileText, Settings, Bell, User, Video } from 'lucide-react';
+import { Home, Camera, AlertTriangle, MapPin, FileText, Settings, Bell, User, Video, LogOut } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Layout({ children, activeTab, setActiveTab }) {
+    const { admin, logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+    };
     return (
         <div className="min-h-screen bg-gray-900 text-white flex flex-col overflow-hidden">
             {/* Header */}
@@ -17,8 +23,22 @@ export default function Layout({ children, activeTab, setActiveTab }) {
                         <button className="bg-white hover:bg-gray-100 text-black px-4 py-2 rounded-lg flex items-center space-x-2">
                             <Bell className="w-5 h-5" />
                         </button>
-                        <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                            <User className="w-5 h-5" />
+                        <div className="flex items-center space-x-2 sm:space-x-3">
+                            <div className="hidden sm:flex flex-col items-end">
+                                <span className="text-sm font-medium text-white">{admin?.username || 'Admin'}</span>
+                                <span className="text-xs text-gray-400">{admin?.role || 'admin'}</span>
+                            </div>
+                            <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                                <User className="w-5 h-5" />
+                            </div>
+                            <button
+                                onClick={handleLogout}
+                                className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                                title="Logout"
+                            >
+                                <LogOut className="w-4 h-4" />
+                                <span className="hidden sm:inline">Logout</span>
+                            </button>
                         </div>
                     </div>
                 </div>

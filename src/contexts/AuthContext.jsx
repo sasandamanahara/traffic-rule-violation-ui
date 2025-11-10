@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import config from '../config';
 
 const AuthContext = createContext();
 
@@ -16,7 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  const API_BASE_URL = 'http://localhost:5001';
+  const API_BASE_URL = config.API_BASE_URL;
 
   // Check authentication on mount
   useEffect(() => {

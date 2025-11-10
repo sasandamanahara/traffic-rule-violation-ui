@@ -10,6 +10,7 @@ import {
   FileText,
   Clock,
 } from "lucide-react";
+import config from "../config";
 
 export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -72,7 +73,7 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
         });
       }, 500);
 
-      const response = await fetch("http://localhost:5001/process-video", {
+      const response = await fetch(`${config.API_BASE_URL}/api/process-video`, {
         method: "POST",
         body: formData,
       });

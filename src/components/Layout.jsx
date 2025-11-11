@@ -51,8 +51,8 @@ export default function Layout({ children, activeTab, setActiveTab }) {
                         <button
                             onClick={() => setActiveTab('dashboard')}
                             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'dashboard'
-                                ? 'bg-gray-700 text-black'
-                                : 'text-black hover:bg-gray-700 '
+                                ? 'bg-blue-600 text-white'
+                                : 'text-white hover:bg-gray-700 '
                                 }`}
                         >
                             <Home className="w-5 h-5 flex-shrink-0" />
@@ -61,8 +61,8 @@ export default function Layout({ children, activeTab, setActiveTab }) {
                         <button
                             onClick={() => setActiveTab('live-feed')}
                             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'live-feed'
-                                ? 'bg-gray-700 text-black'
-                                : 'text-black hover:bg-gray-700 '
+                                ? 'bg-blue-600 text-white'
+                                : 'text-white hover:bg-gray-700 '
                                 }`}
                         >
                             <Camera className="w-5 h-5 flex-shrink-0" />
@@ -71,8 +71,8 @@ export default function Layout({ children, activeTab, setActiveTab }) {
                         <button
                             onClick={() => setActiveTab('video-detection')}
                             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'video-detection'
-                                ? 'bg-gray-700 text-black'
-                                : 'text-black hover:bg-gray-700 '
+                                ? 'bg-blue-600 text-white'
+                                : 'text-white hover:bg-gray-700 '
                                 }`}
                         >
                             <Video className="w-5 h-5 flex-shrink-0" />
@@ -81,8 +81,8 @@ export default function Layout({ children, activeTab, setActiveTab }) {
                         <button
                             onClick={() => setActiveTab('violations')}
                             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'violations'
-                                ? 'bg-gray-700 text-black'
-                                : 'text-black hover:bg-gray-700 '
+                                ? 'bg-blue-600 text-white'
+                                : 'text-white hover:bg-gray-700 '
                                 }`}
                         >
                             <AlertTriangle className="w-5 h-5 flex-shrink-0" />
@@ -91,8 +91,8 @@ export default function Layout({ children, activeTab, setActiveTab }) {
                         <button
                             onClick={() => setActiveTab('map')}
                             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'map'
-                                ? 'bg-gray-700 text-black'
-                                : 'text-black hover:bg-gray-700 '
+                                ? 'bg-blue-600 text-white'
+                                : 'text-white hover:bg-gray-700 '
                                 }`}
                         >
                             <MapPin className="w-5 h-5 flex-shrink-0" />
@@ -101,8 +101,8 @@ export default function Layout({ children, activeTab, setActiveTab }) {
                         <button
                             onClick={() => setActiveTab('reports')}
                             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'reports'
-                                ? 'bg-gray-700 text-black'
-                                : 'text-black hover:bg-gray-700 '
+                                ? 'bg-blue-600 text-white'
+                                : 'text-white hover:bg-gray-700 '
                                 }`}
                         >
                             <FileText className="w-5 h-5 flex-shrink-0" />
@@ -110,9 +110,9 @@ export default function Layout({ children, activeTab, setActiveTab }) {
                         </button>
                         <button
                             onClick={() => setActiveTab('camera-setup')}
-                            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'reports'
-                                ? 'bg-gray-700 text-black'
-                                : 'text-black hover:bg-gray-700 '
+                            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'camera-setup'
+                                ? 'bg-blue-600 text-white'
+                                : 'text-white hover:bg-gray-700 '
                                 }`}
                         >
                             <FileText className="w-5 h-5 flex-shrink-0" />
@@ -124,8 +124,8 @@ export default function Layout({ children, activeTab, setActiveTab }) {
                         <button
                             onClick={() => setActiveTab('settings')}
                             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'settings'
-                                ? 'bg-gray-700 text-black'
-                                : 'text-black hover:bg-gray-700 '
+                                ? 'bg-blue-600 text-white'
+                                : 'text-white hover:bg-gray-700 '
                                 }`}
                         >
                             <Settings className="w-5 h-5 flex-shrink-0" />

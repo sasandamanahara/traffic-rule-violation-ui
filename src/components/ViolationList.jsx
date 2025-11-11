@@ -110,13 +110,15 @@ export default function ViolationList() {
     const getStatusColor = (status) => {
         switch (status) {
             case 'Pending':
-                return 'bg-yellow-500';
+                return 'bg-yellow-500 text-white';
             case 'Paid':
-                return 'bg-green-500';
+                return 'bg-green-500 text-white';
             case 'Disputed':
-                return 'bg-red-500';
+                return 'bg-red-500 text-white';
+            case 'Resolved':
+                return 'bg-green-500 text-white';
             default:
-                return 'bg-gray-500';
+                return 'bg-gray-500 text-white';
         }
     };
 

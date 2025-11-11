@@ -85,13 +85,13 @@ export default function CameraMap() {
     const getStatusColor = (status) => {
         switch (status) {
             case 'active':
-                return 'bg-green-500';
+                return 'bg-green-500 text-white';
             case 'maintenance':
-                return 'bg-yellow-500';
+                return 'bg-yellow-500 text-white';
             case 'offline':
-                return 'bg-red-500';
+                return 'bg-red-500 text-white';
             default:
-                return 'bg-gray-500';
+                return 'bg-gray-500 text-white';
         }
     };
 
@@ -119,7 +119,7 @@ export default function CameraMap() {
                     <p className="text-white text-lg">{error}</p>
                     <button 
                         onClick={fetchCameras} 
-                        className="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
+                        className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
                     >
                         Retry
                     </button>

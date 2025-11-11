@@ -191,16 +191,100 @@ export default function Reports() {
 
     const currentData = reportData ? reportData[selectedReport] : null;
 
+    const handleExport = async () => {
+        try {
+            const response = await fetch(`${config.API_BASE_URL}/api/reports/export`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeaders()
+                },
+                body: JSON.stringify({
+                    report_type: selectedReport,
+                    date_range: dateRange,
+                    format: exportFormat
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate report');
+            }
+
+            // Get filename from Content-Disposition header or use default
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = `violation_report_${selectedReport}_${dateRange}.${exportFormat}`;
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+                if (filenameMatch) {
+                    filename = filenameMatch[1];
+                }
+            }
+
+            // Download the file
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Export error:', error);
+            alert('Failed to export report. Please try again.');
+        }
+    };
+
+    const handleExportAll = async () => {
+        // Export all report types
+        const formats = ['pdf', 'csv', 'excel'];
+        for (const format of formats) {
+            try {
+                const response = await fetch(`${config.API_BASE_URL}/api/reports/export`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...getAuthHeaders()
+                    },
+                    body: JSON.stringify({
+                        report_type: 'all',
+                        date_range: dateRange,
+                        format: format
+                    })
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `violation_report_all_${dateRange}.${format}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    // Small delay between downloads
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            } catch (error) {
+                console.error(`Export error for ${format}:`, error);
+            }
+        }
+    };
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'Pending':
-                return 'bg-yellow-500';
+                return 'bg-yellow-500 text-white';
             case 'Paid':
-                return 'bg-green-500';
+                return 'bg-green-500 text-white';
             case 'Disputed':
-                return 'bg-red-500';
+                return 'bg-red-500 text-white';
+            case 'Resolved':
+                return 'bg-green-500 text-white';
             default:
-                return 'bg-gray-500';
+                return 'bg-gray-500 text-white';
         }
     };
 
@@ -223,7 +307,7 @@ export default function Reports() {
                     <p className="text-white text-lg">{error}</p>
                     <button 
                         onClick={fetchReportData} 
-                        className="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
+                        className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
                     >
                         Retry
                     </button>
@@ -252,11 +336,8 @@ export default function Reports() {
                 </div>
                 <div className="flex items-center space-x-4">
                     <button 
-                        onClick={() => {
-                            // Export functionality - would need backend endpoint
-                            alert('Export functionality coming soon');
-                        }}
-                        className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg flex items-center space-x-2"
+                        onClick={handleExportAll}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
                     >
                         <DownloadIcon className="w-4 h-4" />
                         <span>Export All</span>
@@ -329,11 +410,8 @@ export default function Reports() {
                                     <option value="csv">CSV</option>
                                 </select>
                                 <button 
-                                    onClick={() => {
-                                        // Export functionality
-                                        alert('Export functionality coming soon');
-                                    }}
-                                    className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg flex items-center space-x-2"
+                                    onClick={handleExport}
+                                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
                                 >
                                     <Download className="w-4 h-4" />
                                     <span>Export</span>

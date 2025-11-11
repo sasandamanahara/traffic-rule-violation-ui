@@ -143,7 +143,7 @@ export default function LiveFeed() {
                         <button
                             onClick={captureAndSend}
                             disabled={isCapturing}
-                            className="w-full bg-green-600 text-black px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
+                            className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
                         >
                             {isCapturing ? (
                                 <>

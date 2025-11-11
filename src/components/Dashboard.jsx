@@ -85,7 +85,7 @@ export default function Dashboard() {
     }, [getAuthHeaders]);
 
     const getStatusColor = (status) => {
-        return status === 'Open' ? 'bg-red-500' : 'bg-green-500';
+        return status === 'Open' ? 'bg-red-500 text-white' : 'bg-green-500 text-white';
     };
 
     const quickActions = [
@@ -138,7 +138,7 @@ export default function Dashboard() {
                     <p className="text-white text-lg">{error}</p>
                     <button 
                         onClick={() => window.location.reload()} 
-                        className="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
+                        className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
                     >
                         Retry
                     </button>
@@ -171,7 +171,7 @@ export default function Dashboard() {
                                 return (
                                     <button
                                         key={action.id}
-                                        className="w-full text-left p-4 rounded-lg border border-gray-600 hover:border-gray-500 transition-colors"
+                                        className="w-full text-left p-4 rounded-lg border border-gray-600 hover:border-gray-500 hover:bg-gray-700 transition-colors bg-gray-800"
                                     >
                                         <div className="flex items-center space-x-3">
                                             <div className={`p-2 rounded-lg ${action.color}`}>

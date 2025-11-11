@@ -176,19 +176,28 @@ export default function DrawingLanes({ selectedVideo }) {
       ) : (
         // Drawing/canvas section
         <>
-          <div className="text-black space-x-2 py-2">
-            <button onClick={handleAddLine}>➕ Add New Line</button>
+          <div className="text-white space-x-2 py-2 flex flex-wrap gap-2">
+            <button 
+              onClick={handleAddLine}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+            >
+              ➕ Add New Line
+            </button>
             <button
               onClick={handleUndo}
               disabled={lines[activeLineIndex].length === 0}
+              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               ⟲ Undo
             </button>
-            <button onClick={exportFullLine}>
+            <button 
+              onClick={exportFullLine}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+            >
               🖌 Check Direction Violation
             </button>
           </div>
-          <p>Drawing line #{activeLineIndex + 1}</p>
+          <p className="text-white">Drawing line #{activeLineIndex + 1}</p>
           <canvas
             ref={canvasRef}
             onClick={handleClick}

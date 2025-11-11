@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Webcam from 'react-webcam';
 import { Camera, Settings, AlertTriangle, CheckCircle, Clock, Activity } from 'lucide-react';
+import config from '../config';
 
 export default function LiveFeed() {
     const [isCapturing, setIsCapturing] = useState(false);
@@ -29,7 +30,7 @@ export default function LiveFeed() {
             formData.append('image', blob, 'capture.jpg');
 
             // Send to API
-            const apiResponse = await fetch('http://localhost:5002/predict', {
+            const apiResponse = await fetch(`${config.API_BASE_URL}/api/predict`, {
                 method: 'POST',
                 body: formData,
             });

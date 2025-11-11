@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
-import { FileText, Download, Calendar, BarChart3, TrendingUp, AlertTriangle, Filter, Search, Download as DownloadIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FileText, Download, Calendar, BarChart3, TrendingUp, AlertTriangle, Filter, Search, Download as DownloadIcon, AlertCircle } from 'lucide-react';
+import config from '../config';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Reports() {
     const [selectedReport, setSelectedReport] = useState('daily');
     const [dateRange, setDateRange] = useState('today');
     const [exportFormat, setExportFormat] = useState('pdf');
+    const [reportData, setReportData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const { getAuthHeaders } = useAuth();
 
     const reportTypes = [
         {
@@ -37,120 +43,153 @@ export default function Reports() {
         }
     ];
 
-    const mockData = {
-        daily: {
-            totalViolations: 156,
-            activeCameras: 42,
-            revenue: 23450,
-            topViolations: [
-                { type: 'Speeding', count: 67, percentage: 43 },
-                { type: 'Red Light', count: 45, percentage: 29 },
-                { type: 'Illegal Parking', count: 28, percentage: 18 },
-                { type: 'Distracted Driving', count: 16, percentage: 10 }
-            ]
-        },
-        weekly: {
-            totalViolations: 892,
-            activeCameras: 45,
-            revenue: 134200,
-            trend: '+12%',
-            topLocations: [
-                { location: 'Main Street & Elm', violations: 89 },
-                { location: 'Oak Street & Pine', violations: 67 },
-                { location: 'Maple Drive & Cedar', violations: 54 }
-            ]
-        },
-        monthly: {
-            totalViolations: 3421,
-            activeCameras: 48,
-            revenue: 512300,
-            trend: '+8%',
-            cameraPerformance: [
-                { camera: 'Main Street Camera', violations: 234, uptime: 98 },
-                { camera: 'Oak Street Camera', violations: 189, uptime: 95 },
-                { camera: 'Maple Drive Camera', violations: 156, uptime: 92 }
-            ]
-        },
-        violations: {
-            totalViolations: 3421,
-            activeCameras: 48,
-            revenue: 512300,
-            detailedViolations: [
-                {
-                    id: 'V001',
-                    timestamp: '2024-08-07 10:30:15',
-                    location: 'Main Street & Elm Avenue',
-                    violationType: 'Speeding',
-                    vehicle: 'Toyota Camry',
-                    licensePlate: 'ABC-123',
-                    speed: '75 mph',
-                    limit: '45 mph',
-                    fine: 250,
-                    status: 'Pending',
-                    camera: 'Main Street Camera',
-                    imageUrl: '/violation-images/v001.jpg'
-                },
-                {
-                    id: 'V002',
-                    timestamp: '2024-08-07 11:15:22',
-                    location: 'Oak Street & Pine Road',
-                    violationType: 'Red Light',
-                    vehicle: 'Honda Civic',
-                    licensePlate: 'XYZ-456',
-                    speed: 'N/A',
-                    limit: 'N/A',
-                    fine: 150,
-                    status: 'Paid',
-                    camera: 'Oak Street Camera',
-                    imageUrl: '/violation-images/v002.jpg'
-                },
-                {
-                    id: 'V003',
-                    timestamp: '2024-08-07 12:00:45',
-                    location: 'Maple Drive & Cedar Lane',
-                    violationType: 'Illegal Turn',
-                    vehicle: 'Ford F-150',
-                    licensePlate: 'DEF-789',
-                    speed: 'N/A',
-                    limit: 'N/A',
-                    fine: 100,
-                    status: 'Pending',
-                    camera: 'Maple Drive Camera',
-                    imageUrl: '/violation-images/v003.jpg'
-                },
-                {
-                    id: 'V004',
-                    timestamp: '2024-08-07 12:45:18',
-                    location: 'Willow Street & Birch Avenue',
-                    violationType: 'Distracted Driving',
-                    vehicle: 'BMW X5',
-                    licensePlate: 'GHI-012',
-                    speed: 'N/A',
-                    limit: 'N/A',
-                    fine: 200,
-                    status: 'Pending',
-                    camera: 'Willow Street Camera',
-                    imageUrl: '/violation-images/v004.jpg'
-                },
-                {
-                    id: 'V005',
-                    timestamp: '2024-08-07 13:30:33',
-                    location: 'Cherry Lane & Oak Avenue',
-                    violationType: 'Speeding',
-                    vehicle: 'Mercedes C-Class',
-                    licensePlate: 'JKL-345',
-                    speed: '68 mph',
-                    limit: '40 mph',
-                    fine: 300,
-                    status: 'Paid',
-                    camera: 'Cherry Lane Camera',
-                    imageUrl: '/violation-images/v005.jpg'
+    // Fetch report data
+    useEffect(() => {
+        fetchReportData();
+    }, [selectedReport, dateRange]);
+
+    const fetchReportData = async () => {
+        setLoading(true);
+        setError(null);
+        
+        try {
+            // Fetch stats and violations
+            const [statsResponse, violationsResponse, camerasResponse] = await Promise.all([
+                fetch(`${config.API_BASE_URL}/api/violations/stats`, {
+                    headers: getAuthHeaders()
+                }),
+                fetch(`${config.API_BASE_URL}/api/violations?limit=1000`, {
+                    headers: getAuthHeaders()
+                }),
+                fetch(`${config.API_BASE_URL}/api/cameras`, {
+                    headers: getAuthHeaders()
+                })
+            ]);
+
+            if (!statsResponse.ok || !violationsResponse.ok || !camerasResponse.ok) {
+                throw new Error('Failed to fetch report data');
+            }
+
+            const [statsData, violationsData, camerasData] = await Promise.all([
+                statsResponse.json(),
+                violationsResponse.json(),
+                camerasResponse.json()
+            ]);
+
+            if (statsData.success && violationsData.success && camerasData.success) {
+                const stats = statsData.stats || {};
+                const violations = violationsData.violations || [];
+                const cameras = camerasData.cameras || [];
+
+                // Calculate date range filter
+                const now = new Date();
+                let startDate = new Date();
+                if (dateRange === 'today') {
+                    startDate.setHours(0, 0, 0, 0);
+                } else if (dateRange === 'yesterday') {
+                    startDate.setDate(startDate.getDate() - 1);
+                    startDate.setHours(0, 0, 0, 0);
+                } else if (dateRange === 'week') {
+                    startDate.setDate(startDate.getDate() - 7);
+                } else if (dateRange === 'month') {
+                    startDate.setMonth(startDate.getMonth() - 1);
                 }
-            ]
+
+                const filteredViolations = violations.filter(v => {
+                    if (!v.created_at) return false;
+                    const violationDate = new Date(v.created_at);
+                    return violationDate >= startDate;
+                });
+
+                // Calculate top violations by type
+                const violationCounts = {};
+                filteredViolations.forEach(v => {
+                    const type = v.type || 'Unknown';
+                    violationCounts[type] = (violationCounts[type] || 0) + 1;
+                });
+                const topViolations = Object.entries(violationCounts)
+                    .map(([type, count]) => ({
+                        type,
+                        count,
+                        percentage: Math.round((count / filteredViolations.length) * 100)
+                    }))
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 5);
+
+                // Calculate top locations
+                const locationCounts = {};
+                filteredViolations.forEach(v => {
+                    const location = v.location || 'Unknown';
+                    locationCounts[location] = (locationCounts[location] || 0) + 1;
+                });
+                const topLocations = Object.entries(locationCounts)
+                    .map(([location, violations]) => ({ location, violations }))
+                    .sort((a, b) => b.violations - a.violations)
+                    .slice(0, 5);
+
+                // Format detailed violations
+                const detailedViolations = filteredViolations.slice(0, 50).map(v => ({
+                    id: v._id || v.id,
+                    timestamp: v.created_at ? new Date(v.created_at).toLocaleString() : 'N/A',
+                    location: v.location || 'Unknown',
+                    violationType: v.type || 'Unknown',
+                    vehicle: 'Vehicle',
+                    licensePlate: 'N/A',
+                    speed: 'N/A',
+                    limit: 'N/A',
+                    fine: 0,
+                    status: v.status ? v.status.charAt(0).toUpperCase() + v.status.slice(1) : 'Pending',
+                    camera: 'N/A',
+                    imageUrl: v.snapshot_url
+                }));
+
+                const activeCameras = cameras.filter(c => c.status === 'active').length;
+
+                // Build report data based on selected report type
+                const data = {
+                    daily: {
+                        totalViolations: filteredViolations.length,
+                        activeCameras: activeCameras,
+                        revenue: 0, // Not in schema
+                        topViolations: topViolations
+                    },
+                    weekly: {
+                        totalViolations: filteredViolations.length,
+                        activeCameras: activeCameras,
+                        revenue: 0,
+                        trend: '+0%', // Would need historical data
+                        topLocations: topLocations
+                    },
+                    monthly: {
+                        totalViolations: filteredViolations.length,
+                        activeCameras: activeCameras,
+                        revenue: 0,
+                        trend: '+0%',
+                        cameraPerformance: cameras.slice(0, 5).map(c => ({
+                            camera: c.name || c.location || 'Unnamed',
+                            violations: 0, // Would need to count per camera
+                            uptime: 95 // Would need to calculate
+                        }))
+                    },
+                    violations: {
+                        totalViolations: filteredViolations.length,
+                        activeCameras: activeCameras,
+                        revenue: 0,
+                        detailedViolations: detailedViolations
+                    }
+                };
+
+                setReportData(data);
+            }
+        } catch (err) {
+            console.error('Error fetching report data:', err);
+            setError('Failed to load report data');
+        } finally {
+            setLoading(false);
         }
     };
 
-    const currentData = mockData[selectedReport];
+    const currentData = reportData ? reportData[selectedReport] : null;
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -165,6 +204,44 @@ export default function Reports() {
         }
     };
 
+    if (loading) {
+        return (
+            <div className="h-full p-6 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-white text-lg">Loading report data...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="h-full p-6 flex items-center justify-center">
+                <div className="text-center">
+                    <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                    <p className="text-white text-lg">{error}</p>
+                    <button 
+                        onClick={fetchReportData} 
+                        className="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!currentData) {
+        return (
+            <div className="h-full p-6 flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-white text-lg">No data available</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="h-full p-6 overflow-auto">
             {/* Header */}
@@ -174,7 +251,13 @@ export default function Reports() {
                     <p className="text-gray-400">Generate and export traffic violation reports</p>
                 </div>
                 <div className="flex items-center space-x-4">
-                    <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg flex items-center space-x-2">
+                    <button 
+                        onClick={() => {
+                            // Export functionality - would need backend endpoint
+                            alert('Export functionality coming soon');
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg flex items-center space-x-2"
+                    >
                         <DownloadIcon className="w-4 h-4" />
                         <span>Export All</span>
                     </button>
@@ -245,7 +328,13 @@ export default function Reports() {
                                     <option value="excel">Excel</option>
                                     <option value="csv">CSV</option>
                                 </select>
-                                <button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg flex items-center space-x-2">
+                                <button 
+                                    onClick={() => {
+                                        // Export functionality
+                                        alert('Export functionality coming soon');
+                                    }}
+                                    className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg flex items-center space-x-2"
+                                >
                                     <Download className="w-4 h-4" />
                                     <span>Export</span>
                                 </button>
@@ -256,15 +345,15 @@ export default function Reports() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                             <div className="bg-gray-700 rounded-lg p-4">
                                 <h4 className="text-gray-400 text-sm font-medium">Total Violations</h4>
-                                <p className="text-2xl font-bold text-white">{currentData.totalViolations.toLocaleString()}</p>
+                                <p className="text-2xl font-bold text-white">{currentData.totalViolations?.toLocaleString() || 0}</p>
                             </div>
                             <div className="bg-gray-700 rounded-lg p-4">
                                 <h4 className="text-gray-400 text-sm font-medium">Active Cameras</h4>
-                                <p className="text-2xl font-bold text-white">{currentData.activeCameras}</p>
+                                <p className="text-2xl font-bold text-white">{currentData.activeCameras || 0}</p>
                             </div>
                             <div className="bg-gray-700 rounded-lg p-4">
                                 <h4 className="text-gray-400 text-sm font-medium">Revenue</h4>
-                                <p className="text-2xl font-bold text-white">${currentData.revenue.toLocaleString()}</p>
+                                <p className="text-2xl font-bold text-white">${(currentData.revenue || 0).toLocaleString()}</p>
                             </div>
                         </div>
 
@@ -274,7 +363,8 @@ export default function Reports() {
                                 <div>
                                     <h4 className="text-lg font-semibold mb-4">Top Violations</h4>
                                     <div className="space-y-3">
-                                        {currentData.topViolations.map((violation, index) => (
+                                        {currentData.topViolations && currentData.topViolations.length > 0 ? (
+                                            currentData.topViolations.map((violation, index) => (
                                             <div key={index} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
                                                 <div className="flex items-center space-x-3">
                                                     <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white font-bold">
@@ -287,7 +377,10 @@ export default function Reports() {
                                                     <p className="text-sm text-gray-400">{violation.percentage}%</p>
                                                 </div>
                                             </div>
-                                        ))}
+                                            ))
+                                        ) : (
+                                            <p className="text-gray-400 text-center py-4">No violations data available</p>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -296,7 +389,8 @@ export default function Reports() {
                                 <div>
                                     <h4 className="text-lg font-semibold mb-4">Top Locations</h4>
                                     <div className="space-y-3">
-                                        {currentData.topLocations.map((location, index) => (
+                                        {currentData.topLocations && currentData.topLocations.length > 0 ? (
+                                            currentData.topLocations.map((location, index) => (
                                             <div key={index} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
                                                 <div className="flex items-center space-x-3">
                                                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
@@ -308,7 +402,10 @@ export default function Reports() {
                                                     <p className="font-medium">{location.violations} violations</p>
                                                 </div>
                                             </div>
-                                        ))}
+                                            ))
+                                        ) : (
+                                            <p className="text-gray-400 text-center py-4">No location data available</p>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -317,7 +414,8 @@ export default function Reports() {
                                 <div>
                                     <h4 className="text-lg font-semibold mb-4">Camera Performance</h4>
                                     <div className="space-y-3">
-                                        {currentData.cameraPerformance.map((camera, index) => (
+                                        {currentData.cameraPerformance && currentData.cameraPerformance.length > 0 ? (
+                                            currentData.cameraPerformance.map((camera, index) => (
                                             <div key={index} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
                                                 <div className="flex items-center space-x-3">
                                                     <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
@@ -330,7 +428,10 @@ export default function Reports() {
                                                     <p className="text-sm text-gray-400">{camera.uptime}% uptime</p>
                                                 </div>
                                             </div>
-                                        ))}
+                                            ))
+                                        ) : (
+                                            <p className="text-gray-400 text-center py-4">No camera performance data available</p>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -339,22 +440,20 @@ export default function Reports() {
                                 <div>
                                     <h4 className="text-lg font-semibold mb-4">Detailed Violations</h4>
                                     <div className="overflow-x-auto">
-                                        <table className="w-full">
-                                            <thead className="bg-gray-700">
-                                                <tr>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Time</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Location</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Type</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Vehicle</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">License</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Fine</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-700">
-                                                {currentData.detailedViolations.map((violation) => (
+                                        {currentData.detailedViolations && currentData.detailedViolations.length > 0 ? (
+                                            <table className="w-full">
+                                                <thead className="bg-gray-700">
+                                                    <tr>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">ID</th>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Time</th>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Location</th>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Type</th>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-700">
+                                                    {currentData.detailedViolations.map((violation) => (
                                                     <tr key={violation.id} className="hover:bg-gray-700">
                                                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
                                                             {violation.id}
@@ -368,29 +467,30 @@ export default function Reports() {
                                                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
                                                             {violation.violationType}
                                                         </td>
-                                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
-                                                            {violation.vehicle}
-                                                        </td>
-                                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
-                                                            {violation.licensePlate}
-                                                        </td>
-                                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
-                                                            ${violation.fine}
-                                                        </td>
                                                         <td className="px-4 py-3 whitespace-nowrap">
                                                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(violation.status)}`}>
                                                                 {violation.status}
                                                             </span>
                                                         </td>
                                                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
-                                                            <button className="text-blue-400 hover:text-blue-300 mr-2">View</button>
-                                                            <button className="text-green-400 hover:text-green-300 mr-2">Edit</button>
-                                                            <button className="text-red-400 hover:text-red-300">Delete</button>
+                                                            {violation.imageUrl && (
+                                                                <a 
+                                                                    href={violation.imageUrl} 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-400 hover:text-blue-300"
+                                                                >
+                                                                    View Image
+                                                                </a>
+                                                            )}
                                                         </td>
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
+                                        ) : (
+                                            <p className="text-gray-400 text-center py-4">No violations found for selected period</p>
+                                        )}
                                     </div>
                                 </div>
                             )}

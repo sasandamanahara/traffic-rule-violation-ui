@@ -1,72 +1,73 @@
-import React, { useState } from 'react';
-import { MapPin, Camera, AlertTriangle, CheckCircle, XCircle, Wifi, WifiOff } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Camera, AlertTriangle, CheckCircle, XCircle, Wifi, WifiOff, AlertCircle } from 'lucide-react';
+import config from '../config';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function CameraMap() {
     const [selectedCamera, setSelectedCamera] = useState(null);
     const [filterStatus, setFilterStatus] = useState('all');
+    const [cameras, setCameras] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const { getAuthHeaders } = useAuth();
 
-    const cameras = [
-        {
-            id: 1,
-            name: 'Main Street & Elm Avenue',
-            location: { lat: 40.7128, lng: -74.0060 },
-            status: 'active',
-            violations: 45,
-            lastActivity: '2 minutes ago',
-            type: 'Traffic Light',
-            resolution: '1080p'
-        },
-        {
-            id: 2,
-            name: 'Oak Street & Pine Road',
-            location: { lat: 40.7589, lng: -73.9851 },
-            status: 'active',
-            violations: 32,
-            lastActivity: '5 minutes ago',
-            type: 'Speed Camera',
-            resolution: '4K'
-        },
-        {
-            id: 3,
-            name: 'Maple Drive & Cedar Lane',
-            location: { lat: 40.7505, lng: -73.9934 },
-            status: 'maintenance',
-            violations: 0,
-            lastActivity: '1 hour ago',
-            type: 'Red Light',
-            resolution: '1080p'
-        },
-        {
-            id: 4,
-            name: 'Willow Street & Birch Avenue',
-            location: { lat: 40.7614, lng: -73.9776 },
-            status: 'offline',
-            violations: 0,
-            lastActivity: '3 hours ago',
-            type: 'Speed Camera',
-            resolution: '4K'
-        },
-        {
-            id: 5,
-            name: 'Cherry Lane & Oak Avenue',
-            location: { lat: 40.7484, lng: -73.9857 },
-            status: 'active',
-            violations: 28,
-            lastActivity: '1 minute ago',
-            type: 'Traffic Light',
-            resolution: '1080p'
-        },
-        {
-            id: 6,
-            name: 'Pine Street & Maple Road',
-            location: { lat: 40.7569, lng: -73.9865 },
-            status: 'active',
-            violations: 67,
-            lastActivity: '30 seconds ago',
-            type: 'Speed Camera',
-            resolution: '4K'
+    // Fetch cameras
+    useEffect(() => {
+        fetchCameras();
+    }, []);
+
+    const fetchCameras = async () => {
+        setLoading(true);
+        setError(null);
+        
+        try {
+            const response = await fetch(`${config.API_BASE_URL}/api/cameras`, {
+                headers: getAuthHeaders()
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch cameras');
+            }
+
+            const data = await response.json();
+            if (data.success && data.cameras) {
+                // Format cameras for display
+                const formatted = data.cameras.map(c => ({
+                    id: c._id || c.id,
+                    name: c.name || c.location || 'Unnamed Camera',
+                    location: {
+                        lat: c.latitude || 0,
+                        lng: c.longitude || 0
+                    },
+                    status: c.status || 'offline',
+                    violations: 0, // Will need to fetch separately
+                    lastActivity: c.updated_at ? formatTimeAgo(new Date(c.updated_at)) : 'Unknown',
+                    type: c.type || 'Traffic Camera',
+                    resolution: c.resolution || '1080p',
+                    rawData: c
+                }));
+                setCameras(formatted);
+            }
+        } catch (err) {
+            console.error('Error fetching cameras:', err);
+            setError('Failed to load cameras');
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    const formatTimeAgo = (date) => {
+        const now = new Date();
+        const diff = now - date;
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        
+        if (minutes < 1) return 'Just now';
+        if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+        if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        return `${days} day${days > 1 ? 's' : ''} ago`;
+    };
 
     const getStatusIcon = (status) => {
         switch (status) {
@@ -98,6 +99,34 @@ export default function CameraMap() {
         if (filterStatus === 'all') return true;
         return camera.status === filterStatus;
     });
+
+    if (loading) {
+        return (
+            <div className="h-full p-6 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-white text-lg">Loading cameras...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="h-full p-6 flex items-center justify-center">
+                <div className="text-center">
+                    <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                    <p className="text-white text-lg">{error}</p>
+                    <button 
+                        onClick={fetchCameras} 
+                        className="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="h-full p-6 overflow-auto">
@@ -134,8 +163,20 @@ export default function CameraMap() {
                                 <h3 className="text-xl font-semibold mb-2">Interactive Map</h3>
                                 <p className="text-gray-400">Map integration coming soon...</p>
                                 <p className="text-sm text-gray-500 mt-2">
-                                    {filteredCameras.length} cameras shown
+                                    {filteredCameras.length} camera{filteredCameras.length !== 1 ? 's' : ''} shown
                                 </p>
+                                {filteredCameras.length > 0 && (
+                                    <div className="mt-4 text-left">
+                                        <p className="text-sm text-gray-400 mb-2">Camera Locations:</p>
+                                        <div className="space-y-1 text-xs text-gray-500">
+                                            {filteredCameras.slice(0, 5).map(cam => (
+                                                <div key={cam.id}>
+                                                    {cam.name}: {cam.location.lat !== 0 ? `${cam.location.lat.toFixed(4)}, ${cam.location.lng.toFixed(4)}` : 'No coordinates'}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -144,7 +185,10 @@ export default function CameraMap() {
                 {/* Camera List */}
                 <div className="space-y-4 overflow-y-auto">
                     <h3 className="text-lg font-semibold">Camera Status</h3>
-                    {filteredCameras.map((camera) => (
+                    {filteredCameras.length === 0 ? (
+                        <p className="text-gray-400 text-center py-4">No cameras found</p>
+                    ) : (
+                        filteredCameras.map((camera) => (
                         <div
                             key={camera.id}
                             onClick={() => setSelectedCamera(camera)}
@@ -186,7 +230,8 @@ export default function CameraMap() {
                                 </span>
                             </div>
                         </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </div>
 

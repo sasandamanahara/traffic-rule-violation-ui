@@ -1,60 +1,88 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, AlertTriangle, Video, TrendingUp, MapPin, Clock } from 'lucide-react';
+import config from '../config';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Dashboard() {
     const [stats, setStats] = useState({
-        totalViolations: 1234,
-        activeCameras: 56,
-        incidentsReported: 789
+        totalViolations: 0,
+        activeCameras: 0,
+        incidentsReported: 0
     });
 
-    const [recentViolations, setRecentViolations] = useState([
-        {
-            id: 1,
-            time: '10:30 AM',
-            location: 'Main Street & Elm Avenue',
-            violationType: 'Speeding',
-            vehicle: 'Car',
-            license: 'ABC-123',
-            status: 'Open'
-        },
-        {
-            id: 2,
-            time: '11:15 AM',
-            location: 'Oak Street & Pine Road',
-            violationType: 'Running Red Light',
-            vehicle: 'Truck',
-            license: 'XYZ-456',
-            status: 'Closed'
-        },
-        {
-            id: 3,
-            time: '12:00 PM',
-            location: 'Maple Drive & Cedar Lane',
-            violationType: 'Illegal Turn',
-            vehicle: 'Motorcycle',
-            license: 'DEF-789',
-            status: 'Open'
-        },
-        {
-            id: 4,
-            time: '12:45 PM',
-            location: 'Willow Street & Birch Avenue',
-            violationType: 'Parking Violation',
-            vehicle: 'Van',
-            license: 'GHI-012',
-            status: 'Open'
-        },
-        {
-            id: 5,
-            time: '13:30 PM',
-            location: 'Cherry Lane & Oak Avenue',
-            violationType: 'Distracted Driving',
-            vehicle: 'SUV',
-            license: 'JKL-345',
-            status: 'Closed'
-        }
-    ]);
+    const [recentViolations, setRecentViolations] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const { getAuthHeaders } = useAuth();
+
+    // Fetch dashboard data
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            setLoading(true);
+            setError(null);
+            
+            try {
+                // Fetch stats and violations in parallel
+                const [statsResponse, violationsResponse, camerasResponse] = await Promise.all([
+                    fetch(`${config.API_BASE_URL}/api/violations/stats`, {
+                        headers: getAuthHeaders()
+                    }),
+                    fetch(`${config.API_BASE_URL}/api/violations?limit=5`, {
+                        headers: getAuthHeaders()
+                    }),
+                    fetch(`${config.API_BASE_URL}/api/cameras`, {
+                        headers: getAuthHeaders()
+                    })
+                ]);
+
+                // Handle stats
+                if (statsResponse.ok) {
+                    const statsData = await statsResponse.json();
+                    if (statsData.success && statsData.stats) {
+                        setStats({
+                            totalViolations: statsData.stats.total_violations || 0,
+                            activeCameras: 0, // Will be set from cameras response
+                            incidentsReported: statsData.stats.recent_count || 0
+                        });
+                    }
+                }
+
+                // Handle cameras
+                if (camerasResponse.ok) {
+                    const camerasData = await camerasResponse.json();
+                    if (camerasData.success) {
+                        const activeCameras = camerasData.cameras?.filter(c => c.status === 'active').length || 0;
+                        setStats(prev => ({ ...prev, activeCameras }));
+                    }
+                }
+
+                // Handle violations
+                if (violationsResponse.ok) {
+                    const violationsData = await violationsResponse.json();
+                    if (violationsData.success && violationsData.violations) {
+                        // Format violations for display
+                        const formatted = violationsData.violations.slice(0, 5).map(v => ({
+                            id: v._id || v.id,
+                            time: v.created_at ? new Date(v.created_at).toLocaleTimeString() : 'N/A',
+                            location: v.location || 'Unknown',
+                            violationType: v.type || 'Unknown',
+                            vehicle: 'Vehicle', // Not available in current schema
+                            license: 'N/A', // Not available in current schema
+                            status: v.status === 'pending' ? 'Open' : 'Closed'
+                        }));
+                        setRecentViolations(formatted);
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching dashboard data:', err);
+                setError('Failed to load dashboard data');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, [getAuthHeaders]);
 
     const getStatusColor = (status) => {
         return status === 'Open' ? 'bg-red-500' : 'bg-green-500';
@@ -90,6 +118,34 @@ export default function Dashboard() {
             color: 'bg-orange-600'
         }
     ];
+
+    if (loading) {
+        return (
+            <div className="h-full p-6 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-white text-lg">Loading dashboard...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="h-full p-6 flex items-center justify-center">
+                <div className="text-center">
+                    <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                    <p className="text-white text-lg">{error}</p>
+                    <button 
+                        onClick={() => window.location.reload()} 
+                        className="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="h-full p-6 overflow-auto">
@@ -163,7 +219,10 @@ export default function Dashboard() {
                         <div className="bg-gray-700 rounded-lg p-6">
                             <h4 className="text-lg font-medium text-white mb-4">Recent Violations</h4>
                             <div className="space-y-3">
-                                {recentViolations.map((violation) => (
+                                {recentViolations.length === 0 ? (
+                                    <p className="text-gray-400 text-center py-4">No recent violations</p>
+                                ) : (
+                                    recentViolations.map((violation) => (
                                     <div key={violation.id} className="bg-gray-800 rounded-lg p-4 border border-gray-600">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center space-x-3">
@@ -187,7 +246,8 @@ export default function Dashboard() {
                                             {violation.vehicle} • {violation.license}
                                         </div>
                                     </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>

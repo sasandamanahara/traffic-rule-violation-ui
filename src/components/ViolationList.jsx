@@ -198,7 +198,7 @@ export default function ViolationList() {
                                     </select>
                                 </div>
                                 
-                                <button className="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg flex items-center justify-center space-x-2 text-sm">
+                                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 text-sm" style={{ color: '#ffffff', WebkitFontSmoothing: 'antialiased' }}>
                                     <Download className="w-4 h-4" />
                                     <span>Export Results</span>
                                 </button>

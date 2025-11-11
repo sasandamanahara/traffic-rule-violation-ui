@@ -44,10 +44,33 @@ button {
   background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
+  /* Safari/Apple device fixes */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  color: inherit;
 }
 
 button:hover {
   border-color: #646cff;
+}
+
+/* Force text visibility on buttons for Safari/Apple devices */
+button.text-white,
+.text-white button,
+button[class*="text-white"] {
+  color: #ffffff !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-weight: 500;
+}
+
+/* Ensure sidebar buttons are visible on Apple devices */
+aside button,
+nav button {
+  color: #ffffff !important;
+  -webkit-font-smoothing: antialiased;
+  font-weight: 500;
 }
 
 button:focus,

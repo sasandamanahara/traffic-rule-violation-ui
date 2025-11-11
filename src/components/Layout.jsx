@@ -20,7 +20,7 @@ export default function Layout({ children, activeTab, setActiveTab }) {
                         <h1 className="text-lg sm:text-xl font-bold truncate">Citywide Traffic Monitoring</h1>
                     </div>
                     <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
-                        <button className="bg-white hover:bg-gray-100 text-black px-4 py-2 rounded-lg flex items-center space-x-2">
+                        <button className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2" style={{ color: '#ffffff', WebkitFontSmoothing: 'antialiased' }}>
                             <Bell className="w-5 h-5" />
                         </button>
                         <div className="flex items-center space-x-2 sm:space-x-3">

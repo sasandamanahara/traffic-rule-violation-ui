@@ -4,6 +4,74 @@ body {
     background-color: #121c2c;
     color: #fff;
     font-family: sans-serif;
+    /* Safari/Apple device fixes */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Force button text visibility on Safari/Apple devices */
+button {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Explicit text color rules for Safari */
+button.text-white,
+button[class*="text-white"],
+.text-white button {
+    color: #ffffff !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-weight: 500 !important;
+}
+
+/* Sidebar navigation buttons - Safari fix */
+aside button,
+nav button {
+    color: #ffffff !important;
+    -webkit-font-smoothing: antialiased;
+    font-weight: 500 !important;
+}
+
+/* Status badges - ensure visibility */
+.bg-red-500.text-white,
+.bg-green-500.text-white,
+.bg-yellow-500.text-white,
+.bg-blue-500.text-white,
+.bg-gray-500.text-white {
+    color: #ffffff !important;
+    -webkit-font-smoothing: antialiased;
+    font-weight: 500;
+}
+
+/* Safari-specific fixes for all buttons with dark backgrounds */
+button.bg-gray-700,
+button.bg-gray-600,
+button.bg-blue-600,
+button.bg-green-600,
+button.bg-red-600,
+button.bg-yellow-600,
+button[class*="bg-gray"],
+button[class*="bg-blue"],
+button[class*="bg-green"],
+button[class*="bg-red"],
+button[class*="bg-yellow"] {
+    color: #ffffff !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    font-weight: 500 !important;
+}
+
+/* Force text color on all buttons inside dark containers */
+.bg-gray-800 button,
+.bg-gray-700 button,
+aside button,
+nav button {
+    color: #ffffff !important;
+    -webkit-font-smoothing: antialiased !important;
+    font-weight: 500 !important;
 }
 
 .app-container {

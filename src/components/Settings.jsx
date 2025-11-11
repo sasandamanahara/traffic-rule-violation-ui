@@ -50,10 +50,10 @@ export default function Settings() {
                         <p className="text-gray-400">Configure your traffic monitoring system</p>
                     </div>
                     <div className="flex items-center space-x-4">
-                        <button className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg">
+                        <button className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg" style={{ color: '#ffffff', WebkitFontSmoothing: 'antialiased' }}>
                             Reset to Default
                         </button>
-                        <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg">
+                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg" style={{ color: '#ffffff', WebkitFontSmoothing: 'antialiased' }}>
                             Save Changes
                         </button>
                     </div>
@@ -236,7 +236,7 @@ export default function Settings() {
 
                                         <div className="p-4 bg-gray-700 rounded-lg">
                                             <h4 className="font-medium mb-2">Two-Factor Authentication</h4>
-                                            <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg">
+                                            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg" style={{ color: '#ffffff', WebkitFontSmoothing: 'antialiased' }}>
                                                 Enable 2FA
                                             </button>
                                         </div>
@@ -330,13 +330,13 @@ export default function Settings() {
                                         </div>
 
                                         <div className="flex space-x-4">
-                                            <button className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg">
+                                            <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg" style={{ color: '#ffffff', WebkitFontSmoothing: 'antialiased' }}>
                                                 Create Backup
                                             </button>
-                                            <button className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg">
+                                            <button className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg" style={{ color: '#ffffff', WebkitFontSmoothing: 'antialiased' }}>
                                                 Restore Data
                                             </button>
-                                            <button className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg">
+                                            <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg" style={{ color: '#ffffff', WebkitFontSmoothing: 'antialiased' }}>
                                                 Clear All Data
                                             </button>
                                         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Square, AlertTriangle, Activity, Clock, Video, Wifi, WifiOff } from 'lucide-react';
+import { Play, Square, AlertTriangle, Activity, Clock, Video, Wifi, WifiOff, AlertCircle } from 'lucide-react';
 import config from '../config';
 
 export default function LiveFeed() {
@@ -9,8 +9,10 @@ export default function LiveFeed() {
     const [status, setStatus] = useState(null);
     const [error, setError] = useState(null);
     const [streamUrl, setStreamUrl] = useState(null);
+    const [newViolationCount, setNewViolationCount] = useState(0);
     const violationsPollInterval = useRef(null);
     const statusPollInterval = useRef(null);
+    const violationsEndRef = useRef(null);
 
     // Poll for violations
     useEffect(() => {
@@ -53,9 +55,23 @@ export default function LiveFeed() {
             const response = await fetch(`${config.API_BASE_URL}/api/live/violations?limit=20`);
             if (response.ok) {
                 const data = await response.json();
+                console.log('Violations API response:', data); // Debug log
                 if (data.success) {
-                    setViolations(data.violations || []);
+                    const newViolations = data.violations || [];
+                    console.log('Parsed violations:', newViolations.length, newViolations); // Debug log
+                    // Check for new violations
+                    if (violations.length > 0 && newViolations.length > violations.length) {
+                        setNewViolationCount(newViolations.length - violations.length);
+                        // Reset counter after 3 seconds
+                        setTimeout(() => setNewViolationCount(0), 3000);
+                    }
+                    setViolations(newViolations);
+                } else {
+                    console.warn('API returned success=false:', data);
                 }
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('API error response:', response.status, errorData);
             }
         } catch (err) {
             console.error('Error fetching violations:', err);
@@ -137,7 +153,8 @@ export default function LiveFeed() {
                 setIsRunning(false);
                 setStreamUrl(null);
                 setStatus(null);
-                setViolations([]);
+                // Keep violations visible even after stopping detection
+                // setViolations([]);
             }
         } catch (err) {
             console.error('Error stopping detection:', err);
@@ -232,6 +249,35 @@ export default function LiveFeed() {
                     )}
                 </div>
             </div>
+
+            {/* Violations Alert Banner */}
+            {isRunning && violations.length > 0 && (
+                <div className="mb-4 bg-red-900 border border-red-700 rounded-lg p-4 flex items-center justify-between animate-pulse">
+                    <div className="flex items-center space-x-3">
+                        <AlertCircle className="w-6 h-6 text-red-400" />
+                        <div>
+                            <span className="text-red-200 font-semibold">
+                                {violations.length} Violation{violations.length !== 1 ? 's' : ''} Detected
+                            </span>
+                            {newViolationCount > 0 && (
+                                <span className="ml-2 text-red-300 text-sm">
+                                    ({newViolationCount} new)
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                    <a
+                        href="#violations-panel"
+                        className="text-red-200 hover:text-white text-sm underline"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            document.getElementById('violations-panel')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                    >
+                        View All →
+                    </a>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left Sidebar - Controls */}
@@ -376,63 +422,84 @@ export default function LiveFeed() {
             </div>
 
             {/* Violations Panel */}
-            <div className="mt-6">
+            <div id="violations-panel" className="mt-6">
                 <div className="bg-gray-800 rounded-lg border border-gray-700">
                     <div className="px-6 py-4 border-b border-gray-700">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-semibold">Recent Violations</h3>
-                            <span className="text-sm text-gray-400">{violations.length} violations</span>
+                            <div className="flex items-center space-x-3">
+                                <AlertTriangle className="w-5 h-5 text-red-400" />
+                                <h3 className="text-lg font-semibold">Recent Violations</h3>
+                                {violations.length > 0 && (
+                                    <span className="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded-full">
+                                        {violations.length}
+                                    </span>
+                                )}
+                            </div>
+                            {isRunning && (
+                                <div className="flex items-center space-x-2">
+                                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                    <span className="text-xs text-gray-400">Live</span>
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     <div className="p-6">
                         {violations.length > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {violations.map((violation) => (
+                                {violations.map((violation, index) => (
                                     <div
                                         key={violation.id}
-                                        className="bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-colors"
+                                        className={`bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-all hover:shadow-lg hover:shadow-red-500/20 border border-gray-600 hover:border-red-500/50 ${
+                                            index < newViolationCount ? 'animate-pulse' : ''
+                                        }`}
                                     >
                                         <div className="flex items-start justify-between mb-3">
-                                            <div className="flex items-center space-x-2">
-                                                <div className={`w-3 h-3 rounded-full ${getViolationTypeColor(violation.type)}`}></div>
-                                                <span className="font-medium text-white">
+                                            <div className="flex items-center space-x-2 flex-1">
+                                                <div className={`w-3 h-3 rounded-full ${getViolationTypeColor(violation.type)} animate-pulse`}></div>
+                                                <span className="font-semibold text-white text-sm">
                                                     {getViolationTypeLabel(violation.type)}
                                                 </span>
+                                            </div>
+                                            <div className="flex items-center space-x-1 text-xs text-gray-400">
+                                                <Clock className="w-3 h-3" />
+                                                <span>{formatTimestamp(violation.timestamp)}</span>
                                             </div>
                                         </div>
 
                                         {violation.image && (
-                                            <div className="mb-3">
+                                            <div className="mb-3 rounded-lg overflow-hidden border-2 border-gray-600">
                                                 <img
                                                     src={violation.image}
                                                     alt="Violation"
-                                                    className="w-full rounded-lg border border-gray-600"
+                                                    className="w-full h-32 object-cover"
                                                 />
                                             </div>
                                         )}
 
-                                        <div className="space-y-1 text-sm">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-gray-400">Vehicle ID:</span>
-                                                <span className="text-white font-medium">
+                                        <div className="space-y-2 text-sm">
+                                            <div className="flex items-center justify-between bg-gray-800/50 rounded px-2 py-1">
+                                                <span className="text-gray-400 text-xs">Vehicle ID:</span>
+                                                <span className="text-white font-medium text-xs">
                                                     {violation.vehicle_id || 'N/A'}
                                                 </span>
                                             </div>
                                             {violation.metadata?.speed && (
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-gray-400">Speed:</span>
-                                                    <span className="text-white font-medium">
+                                                <div className="flex items-center justify-between bg-gray-800/50 rounded px-2 py-1">
+                                                    <span className="text-gray-400 text-xs">Speed:</span>
+                                                    <span className="text-red-400 font-bold text-xs">
                                                         {violation.metadata.speed.toFixed(1)} km/h
                                                     </span>
                                                 </div>
                                             )}
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-gray-400">Time:</span>
-                                                <span className="text-white font-medium">
-                                                    {formatTimestamp(violation.timestamp)}
-                                                </span>
-                                            </div>
+                                            {violation.bbox && (
+                                                <div className="flex items-center justify-between bg-gray-800/50 rounded px-2 py-1">
+                                                    <span className="text-gray-400 text-xs">Location:</span>
+                                                    <span className="text-white font-medium text-xs">
+                                                        [{violation.bbox[0]}, {violation.bbox[1]}]
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -443,6 +510,12 @@ export default function LiveFeed() {
                                 <p className="text-gray-400">No violations detected yet</p>
                                 {!isRunning && (
                                     <p className="text-sm text-gray-500 mt-2">Start detection to monitor violations</p>
+                                )}
+                                {isRunning && (
+                                    <div className="mt-4 flex items-center justify-center space-x-2">
+                                        <Activity className="w-4 h-4 text-gray-500 animate-pulse" />
+                                        <p className="text-sm text-gray-500">Monitoring for violations...</p>
+                                    </div>
                                 )}
                             </div>
                         )}

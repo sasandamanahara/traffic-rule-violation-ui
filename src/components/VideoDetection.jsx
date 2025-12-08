@@ -46,7 +46,7 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
     }
   };
 
-  const processVideo = async () => {
+  const processVideoHelmetTriple = async () => {
     if (!selectedFile) {
       setError("Please select a video file first");
       return;
@@ -73,7 +73,7 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
         });
       }, 500);
 
-      const response = await fetch(`${config.API_BASE_URL}/api/process-video`, {
+      const response = await fetch(`${config.API_BASE_URL}/api/process-video-helmet`, {
         method: "POST",
         body: formData,
       });
@@ -316,19 +316,19 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
             {/* Processing Controls */}
             <div className="mb-6">
               <button
-                onClick={processVideo}
+                onClick={processVideoHelmetTriple}
                 disabled={!selectedFile || isProcessing}
                 className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
               >
                 {isProcessing ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Processing Video...</span>
+                    <span>Helmet + Triple Processing...</span>
                   </>
                 ) : (
                   <>
                     <Play className="w-4 h-4" />
-                    <span>Start Detection</span>
+                    <span>Helmet + Triple Detection</span>
                   </>
                 )}
               </button>
@@ -462,8 +462,7 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
                                     {violation.type} Violation
                                   </p>
                                   <p className="text-gray-400 text-sm">
-                                    Frame: {violation.frame}, Time:{" "}
-                                    {violation.timestamp}s
+                                    Frame: {violation.frame}
                                   </p>
                                   <p className="text-gray-400 text-sm">
                                     Confidence:{" "}
@@ -538,8 +537,7 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
                                 )}
                               </p>
                               <p className="text-gray-400 text-sm mb-1">
-                                Frame: {violation.frame}, Time:{" "}
-                                {violation.timestamp}s
+                                Frame: {violation.frame}
                               </p>
                               <p className="text-gray-400 text-sm mb-1">
                                 Confidence:{" "}

@@ -30,7 +30,7 @@ button[class*="text-white"],
 /* Sidebar navigation buttons - Safari fix */
 aside button,
 nav button {
-    color: #ffffff !important;
+    color: #000000 !important;
     -webkit-font-smoothing: antialiased;
     font-weight: 500 !important;
 }
@@ -69,7 +69,7 @@ button[class*="bg-yellow"] {
 .bg-gray-700 button,
 aside button,
 nav button {
-    color: #ffffff !important;
+    color: #000000 !important;
     -webkit-font-smoothing: antialiased !important;
     font-weight: 500 !important;
 }

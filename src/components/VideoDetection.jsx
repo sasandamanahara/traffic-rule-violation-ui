@@ -104,6 +104,64 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
     }
   };
 
+    const processVideoTrafficLight = async () => {
+    if (!selectedFile) {
+      setError("Please select a video file first");
+      return;
+    }
+
+    setIsProcessing(true);
+    setError(null);
+    setProcessingProgress(0);
+
+    const formData = new FormData();
+    formData.append("video", selectedFile);
+
+    try {
+      console.log("Starting video processing...");
+
+      // Simulate processing progress
+      const progressInterval = setInterval(() => {
+        setProcessingProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return prev;
+          }
+          return prev + 10;
+        });
+      }, 500);
+
+      const response = await fetch(`${config.API_BASE_URL}/api/process-video-trafficlight`, {
+        method: "POST",
+        body: formData,
+      });
+
+      clearInterval(progressInterval);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Video processing results:", data);
+
+      setResults(data);
+      setDetectionStats({
+        totalFrames: data.totalFrames || 0,
+        processedFrames: data.processedFrames || 0,
+        violationsDetected: data.violationsDetected || 0,
+        processingTime: data.processingTime || 0,
+      });
+      setProcessingProgress(100);
+    } catch (error) {
+      console.error("Video processing failed:", error);
+      setError(`Error: ${error.message}`);
+      setProcessingProgress(0);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const setupCamera = async () => {
     if (!selectedFile) {
       setError("Please select a video file first");
@@ -329,6 +387,26 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
                   <>
                     <Play className="w-4 h-4" />
                     <span>Helmet + Triple Detection</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <button
+                onClick={processVideoTrafficLight}
+                disabled={!selectedFile || isProcessing}
+                className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
+              >
+                {isProcessing ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Traffic Light Processing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4" />
+                    <span>Traffic Light Violation Detection</span>
                   </>
                 )}
               </button>

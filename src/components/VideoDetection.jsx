@@ -492,38 +492,6 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
               )}
             </div>
 
-            {/* Processing Settings */}
-            <div className="mb-6">
-              <h4 className="text-md font-medium text-white mb-3">
-                Processing Settings
-              </h4>
-              <div className="space-y-3">
-                {processingSettings.map((setting) => {
-                  const Icon = setting.icon;
-                  return (
-                    <div
-                      key={setting.id}
-                      className="bg-gray-700 rounded-lg p-3"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 rounded-lg bg-blue-600">
-                          <Icon className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                          <h5 className="font-medium text-white">
-                            {setting.name}
-                          </h5>
-                          <p className="text-sm text-gray-400">
-                            {setting.value}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
             {/* Processing Controls */}
             <div className="mb-6">
               <button
@@ -531,17 +499,10 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
                 disabled={!selectedFile || isProcessing}
                 className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
               >
-                {isProcessing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Helmet + Triple Processing...</span>
-                  </>
-                ) : (
                   <>
                     <Play className="w-4 h-4" />
                     <span>Helmet + Triple Detection</span>
                   </>
-                )}
               </button>
             </div>
 
@@ -551,17 +512,10 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
                 disabled={!selectedFile || isProcessing}
                 className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
               >
-                {isProcessing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Traffic Light Processing...</span>
-                  </>
-                ) : (
                   <>
                     <Play className="w-4 h-4" />
                     <span>Traffic Light Violation Detection</span>
                   </>
-                )}
               </button>
             </div>
 
@@ -571,17 +525,10 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
                 disabled={!selectedFile || isProcessing}
                 className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
               >
-                {isProcessing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Direction Violation Processing...</span>
-                  </>
-                ) : (
                   <>
                     <Play className="w-4 h-4" />
                     <span>Direction Violation Detection</span>
                   </>
-                )}
               </button>
             </div>
 
@@ -591,17 +538,10 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
                 disabled={!selectedFile || isProcessing}
                 className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
               >
-                {isProcessing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Speed Violation Processing...</span>
-                  </>
-                ) : (
                   <>
                     <Play className="w-4 h-4" />
                     <span>Speed Violation Detection</span>
                   </>
-                )}
               </button>
             </div>
 
@@ -611,17 +551,10 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
                 disabled={!selectedFile || isProcessing}
                 className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
               >
-                {isProcessing ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Illegal Parking Violation Processing...</span>
-                  </>
-                ) : (
                   <>
                     <Play className="w-4 h-4" />
                     <span>Illegal Parking Violation Detection</span>
                   </>
-                )}
               </button>
             </div>
 

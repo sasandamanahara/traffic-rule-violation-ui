@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Square, AlertTriangle, Activity, Clock, Video, Wifi, WifiOff, AlertCircle } from 'lucide-react';
 import config from '../config';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function LiveFeed() {
     const [isRunning, setIsRunning] = useState(false);
@@ -13,6 +14,7 @@ export default function LiveFeed() {
     const violationsPollInterval = useRef(null);
     const statusPollInterval = useRef(null);
     const violationsEndRef = useRef(null);
+    const { getAuthHeaders, token } = useAuth();
 
     // Poll for violations
     useEffect(() => {
@@ -52,7 +54,9 @@ export default function LiveFeed() {
 
     const fetchViolations = async () => {
         try {
-            const response = await fetch(`${config.API_BASE_URL}/api/live/violations?limit=20`);
+            const response = await fetch(`${config.API_BASE_URL}/api/live/violations?limit=20`, {
+                headers: getAuthHeaders()
+            });
             if (response.ok) {
                 const data = await response.json();
                 console.log('Violations API response:', data); // Debug log
@@ -80,7 +84,9 @@ export default function LiveFeed() {
 
     const fetchStatus = async () => {
         try {
-            const response = await fetch(`${config.API_BASE_URL}/api/live/status`);
+            const response = await fetch(`${config.API_BASE_URL}/api/live/status`, {
+                headers: getAuthHeaders()
+            });
             if (response.ok) {
                 const data = await response.json();
                 if (data.success) {
@@ -106,9 +112,7 @@ export default function LiveFeed() {
         try {
             const response = await fetch(`${config.API_BASE_URL}/api/live/start`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({
                     video_source: videoSource.trim()
                 })
@@ -128,7 +132,11 @@ export default function LiveFeed() {
             }
 
             if (data.success) {
-                setStreamUrl(`${config.API_BASE_URL}/api/live/stream`);
+                // Append token as query parameter for image src (can't send headers)
+                const streamUrlWithAuth = token 
+                    ? `${config.API_BASE_URL}/api/live/stream?token=${encodeURIComponent(token)}`
+                    : `${config.API_BASE_URL}/api/live/stream`;
+                setStreamUrl(streamUrlWithAuth);
                 setStatus(data.status);
             }
         } catch (err) {
@@ -142,9 +150,7 @@ export default function LiveFeed() {
         try {
             const response = await fetch(`${config.API_BASE_URL}/api/live/stop`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+                headers: getAuthHeaders()
             });
 
             const data = await response.json();

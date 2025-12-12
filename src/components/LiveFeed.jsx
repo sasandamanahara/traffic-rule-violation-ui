@@ -233,298 +233,286 @@ export default function LiveFeed() {
     };
 
     return (
-        <div className="h-full p-6 overflow-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <div className="min-w-0 flex-1">
-                    <h1 className="text-3xl font-bold truncate">Live Detection</h1>
-                    <p className="text-gray-400 truncate">Real-time traffic violation detection</p>
-                </div>
-                <div className="flex items-center space-x-4 flex-shrink-0">
-                    {status && (
-                        <div className="flex items-center space-x-2">
-                            {status.connected ? (
-                                <Wifi className="w-5 h-5 text-green-400" />
-                            ) : (
-                                <WifiOff className="w-5 h-5 text-red-400" />
-                            )}
-                            <span className="text-sm text-gray-400 whitespace-nowrap">
-                                {status.connected ? 'Connected' : 'Disconnected'}
-                            </span>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Violations Alert Banner */}
-            {isRunning && violations.length > 0 && (
-                <div className="mb-4 bg-red-900 border border-red-700 rounded-lg p-4 flex items-center justify-between animate-pulse">
-                    <div className="flex items-center space-x-3">
-                        <AlertCircle className="w-6 h-6 text-red-400" />
+        <div className="h-full w-full flex flex-col overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" style={{ height: '100%', overflow: 'hidden' }}>
+            {/* Top Control Bar */}
+            <div className="bg-gray-800/80 backdrop-blur-lg border-b border-gray-700/50 shadow-xl px-6 py-4 flex-shrink-0">
+                <div className="flex items-center justify-between gap-4">
+                    {/* Left: Title and Status */}
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
                         <div>
-                            <span className="text-red-200 font-semibold">
-                                {violations.length} Violation{violations.length !== 1 ? 's' : ''} Detected
-                            </span>
-                            {newViolationCount > 0 && (
-                                <span className="ml-2 text-red-300 text-sm">
-                                    ({newViolationCount} new)
-                                </span>
-                            )}
+                            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                                Live Detection
+                            </h1>
+                            <p className="text-xs text-gray-400 mt-0.5">Real-time traffic violation monitoring</p>
                         </div>
+                        {status && (
+                            <div className="flex items-center gap-3 px-3 py-1.5 bg-gray-700/50 rounded-lg border border-gray-600/50">
+                                {status.connected ? (
+                                    <Wifi className="w-4 h-4 text-green-400" />
+                                ) : (
+                                    <WifiOff className="w-4 h-4 text-red-400" />
+                                )}
+                                <span className="text-xs text-gray-300 whitespace-nowrap">
+                                    {status.connected ? 'Connected' : 'Disconnected'}
+                                </span>
+                                {status.frame_count !== undefined && (
+                                    <>
+                                        <div className="w-px h-4 bg-gray-600"></div>
+                                        <span className="text-xs text-gray-400">
+                                            {status.frame_count.toLocaleString()} frames
+                                        </span>
+                                    </>
+                                )}
+                                {status.violation_count !== undefined && status.violation_count > 0 && (
+                                    <>
+                                        <div className="w-px h-4 bg-gray-600"></div>
+                                        <span className="text-xs text-red-400 font-semibold">
+                                            {status.violation_count} violations
+                                        </span>
+                                    </>
+                                )}
+                            </div>
+                        )}
                     </div>
-                    <a
-                        href="#violations-panel"
-                        className="text-red-200 hover:text-white text-sm underline"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            document.getElementById('violations-panel')?.scrollIntoView({ behavior: 'smooth' });
-                        }}
-                    >
-                        View All →
-                    </a>
-                </div>
-            )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Sidebar - Controls */}
-                <div className="lg:col-span-1">
-                    <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
-                        <h3 className="text-lg font-semibold mb-4">Controls</h3>
-
-                        {/* Video Source Input */}
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Video Source (RTSP/RTMP)
-                            </label>
+                    {/* Center: Video Source Input */}
+                    <div className="flex-1 max-w-2xl">
+                        <div className="flex gap-2">
                             <input
                                 type="text"
                                 value={videoSource}
                                 onChange={(e) => {
                                     setVideoSource(e.target.value);
-                                    // Clear error when user types
                                     if (error) setError(null);
                                 }}
                                 disabled={isRunning}
-                                placeholder="rtmp://localhost:1935/stream/test or rtsp://example.com:554/stream"
-                                className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                placeholder="rtmp://localhost:1935/stream/test"
+                                className="flex-1 px-4 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 disabled:opacity-50 transition-all"
                             />
-                            <p className="mt-1 text-xs text-gray-400">
-                                Enter RTMP (e.g., rtmp://localhost:1935/stream/test) or RTSP URL, or local file path
-                            </p>
-                            <p className="mt-1 text-xs text-blue-400">
-                                RTMP: rtmp://host:port/path/key | RTSP: rtsp://[user:pass@]host[:port]/path
-                            </p>
-                        </div>
-
-                        {/* Start/Stop Buttons */}
-                        <div className="space-y-3 mb-6">
                             <button
                                 onClick={startDetection}
                                 disabled={isRunning}
-                                className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
+                                className="px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center gap-2 shadow-lg shadow-green-600/20 hover:shadow-green-600/30 transition-all"
                             >
                                 <Play className="w-4 h-4" />
-                                <span>Start Detection</span>
+                                <span className="hidden sm:inline">Start</span>
                             </button>
-
                             <button
                                 onClick={stopDetection}
                                 disabled={!isRunning}
-                                className="w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
+                                className="px-6 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-lg hover:from-red-700 hover:to-rose-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center gap-2 shadow-lg shadow-red-600/20 hover:shadow-red-600/30 transition-all"
                             >
                                 <Square className="w-4 h-4" />
-                                <span>Stop Detection</span>
+                                <span className="hidden sm:inline">Stop</span>
                             </button>
                         </div>
-
-                        {/* Status Info */}
-                        {status && (
-                            <div className="space-y-3 mb-6">
-                                <div className="bg-gray-700 rounded-lg p-3">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm text-gray-300">Status</span>
-                                        <span className={`text-sm font-medium ${status.running ? 'text-green-400' : 'text-gray-400'}`}>
-                                            {status.running ? 'Running' : 'Stopped'}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {status.frame_count !== undefined && (
-                                    <div className="bg-gray-700 rounded-lg p-3">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm text-gray-300">Frames Processed</span>
-                                            <span className="text-sm font-medium text-white">
-                                                {status.frame_count.toLocaleString()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {status.violation_count !== undefined && (
-                                    <div className="bg-gray-700 rounded-lg p-3">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm text-gray-300">Violations Detected</span>
-                                            <span className="text-sm font-medium text-red-400">
-                                                {status.violation_count}
-                                            </span>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Error Display */}
-                        {error && (
-                            <div className="mt-4 p-4 bg-red-900 border border-red-700 text-red-200 rounded-lg">
-                                <div className="flex items-center space-x-2">
-                                    <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-                                    <span className="text-sm"><strong>Error:</strong> {error}</span>
-                                </div>
-                            </div>
-                        )}
                     </div>
+
+                    {/* Right: Violations Badge */}
+                    {isRunning && violations.length > 0 && (
+                        <div className="flex items-center gap-2 px-4 py-2 bg-red-600/20 border border-red-500/30 rounded-lg backdrop-blur-sm">
+                            <AlertCircle className="w-5 h-5 text-red-400" />
+                            <div className="text-right">
+                                <div className="text-sm font-bold text-red-300">
+                                    {violations.length} {violations.length === 1 ? 'Violation' : 'Violations'}
+                                </div>
+                                {newViolationCount > 0 && (
+                                    <div className="text-xs text-red-400 animate-pulse">
+                                        +{newViolationCount} new
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
-                {/* Main Content - Video Stream */}
-                <div className="lg:col-span-2">
-                    <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-gray-700">
-                            <h3 className="text-lg font-semibold">Live Video Feed</h3>
+                {/* Error Display */}
+                {error && (
+                    <div className="mt-3 p-3 bg-red-900/30 border border-red-700/50 text-red-200 rounded-lg backdrop-blur-sm">
+                        <div className="flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                            <span className="text-sm">{error}</span>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Main Content Area - Large Video Feed */}
+            <div className="flex-1 flex gap-4 p-4 overflow-hidden" style={{ overflow: 'hidden', height: 'calc(100vh - 120px)', display: 'flex' }}>
+                {/* Video Feed - Takes most of the space */}
+                <div className="flex-1 flex flex-col min-w-0" style={{ height: '100%', overflow: 'hidden' }}>
+                    <div className="h-full bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-700/50 shadow-2xl overflow-hidden flex flex-col" style={{ height: '100%', overflow: 'hidden' }}>
+                        <div className="px-6 py-3 border-b border-gray-700/50 bg-gradient-to-r from-gray-800/50 to-transparent flex-shrink-0">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                                    <Video className="w-5 h-5 text-blue-400" />
+                                    Live Video Feed
+                                </h3>
+                                {isRunning && (
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                        <span className="text-xs text-gray-400">Live</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        <div className="p-6">
+                        <div className="flex-1 p-4 flex items-center justify-center" style={{ height: '100%', overflow: 'hidden', flex: '1 1 auto' }}>
                             {streamUrl ? (
-                                <div className="relative bg-black rounded-lg overflow-hidden" style={{ aspectRatio: '16/9' }}>
+                                <div className="relative w-full h-full bg-black rounded-lg overflow-hidden shadow-inner" style={{ height: '100%', width: '100%' }}>
                                     <img
                                         src={streamUrl}
                                         alt="Live Stream"
                                         className="w-full h-full object-contain"
+                                        style={{ height: '100%', width: '100%', objectFit: 'contain' }}
                                         onError={(e) => {
                                             console.error('Stream error');
                                             e.target.style.display = 'none';
                                         }}
                                     />
                                     {!status?.connected && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75">
+                                        <div className="absolute inset-0 flex items-center justify-center bg-gray-900/90 backdrop-blur-sm">
                                             <div className="text-center">
-                                                <WifiOff className="w-12 h-12 text-red-400 mx-auto mb-2" />
-                                                <p className="text-white">Connecting to stream...</p>
+                                                <WifiOff className="w-16 h-16 text-red-400 mx-auto mb-3 animate-pulse" />
+                                                <p className="text-white font-medium">Connecting to stream...</p>
+                                                <p className="text-sm text-gray-400 mt-1">Please wait</p>
                                             </div>
                                         </div>
                                     )}
                                 </div>
                             ) : (
-                                <div className="relative bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center" style={{ aspectRatio: '16/9', minHeight: '400px' }}>
+                                <div className="relative w-full h-full bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-700" style={{ height: '100%', width: '100%' }}>
                                     <div className="text-center">
-                                        <Video className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                                        <p className="text-gray-400">No stream available</p>
-                                        <p className="text-sm text-gray-500 mt-2">Start detection to view live feed</p>
+                                        <div className="w-20 h-20 mx-auto mb-4 bg-gray-800 rounded-full flex items-center justify-center">
+                                            <Video className="w-10 h-10 text-gray-600" />
+                                        </div>
+                                        <p className="text-gray-400 font-medium text-lg">No stream available</p>
+                                        <p className="text-sm text-gray-500 mt-2">Enter a video source and start detection</p>
                                     </div>
                                 </div>
                             )}
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Violations Panel */}
-            <div id="violations-panel" className="mt-6">
-                <div className="bg-gray-800 rounded-lg border border-gray-700">
-                    <div className="px-6 py-4 border-b border-gray-700">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                                <AlertTriangle className="w-5 h-5 text-red-400" />
-                                <h3 className="text-lg font-semibold">Recent Violations</h3>
-                                {violations.length > 0 && (
-                                    <span className="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded-full">
-                                        {violations.length}
-                                    </span>
+                {/* Violations Sidebar - Right Side Scrollable Column */}
+                <div className="w-[32rem] flex-shrink-0 flex flex-col" style={{ height: 'calc(100vh - 120px)', overflow: 'hidden' }}>
+                    <div className="h-full bg-gray-900/50 backdrop-blur-sm rounded-xl border border-gray-700/50 shadow-2xl overflow-hidden flex flex-col" style={{ height: '100%', overflow: 'hidden' }}>
+                        <div className="px-4 py-3 border-b border-gray-700/50 bg-gradient-to-r from-gray-800/50 to-transparent flex-shrink-0" style={{ flexShrink: 0 }}>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <AlertTriangle className="w-5 h-5 text-red-400" />
+                                    <h3 className="text-lg font-semibold text-white">Violations</h3>
+                                    {violations.length > 0 && (
+                                        <span className="px-2 py-0.5 bg-red-600 text-white text-xs font-bold rounded-full">
+                                            {violations.length}
+                                        </span>
+                                    )}
+                                </div>
+                                {isRunning && (
+                                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                                 )}
                             </div>
-                            {isRunning && (
-                                <div className="flex items-center space-x-2">
-                                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                                    <span className="text-xs text-gray-400">Live</span>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto overflow-x-hidden p-4" style={{ overflowY: 'auto', overflowX: 'hidden', height: 0, flex: '1 1 auto' }}>
+                            {violations.length > 0 ? (
+                                <div className="space-y-3">
+                                    {[...violations].reverse().map((violation, index) => (
+                                        <div
+                                            key={violation.id || index}
+                                            className={`group relative bg-gradient-to-br from-gray-800/80 to-gray-900/80 rounded-xl p-4 hover:from-gray-700/80 hover:to-gray-800/80 transition-all duration-300 border border-gray-700/50 hover:border-red-500/50 hover:shadow-xl hover:shadow-red-500/20 backdrop-blur-sm ${
+                                                index < newViolationCount ? 'animate-pulse border-red-500/70 shadow-lg shadow-red-500/30' : ''
+                                            }`}
+                                        >
+                                            {/* Header */}
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                    <div className={`w-3 h-3 rounded-full ${getViolationTypeColor(violation.type)} flex-shrink-0 shadow-lg ${getViolationTypeColor(violation.type)}/50 animate-pulse`}></div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="font-bold text-white text-sm truncate">
+                                                            {getViolationTypeLabel(violation.type)}
+                                                        </h4>
+                                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                                            <Clock className="w-3 h-3 text-gray-400" />
+                                                            <span className="text-xs text-gray-400">{formatTimestamp(violation.timestamp || violation.created_at)}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {index < newViolationCount && (
+                                                    <span className="px-2 py-0.5 bg-red-600 text-white text-xs font-bold rounded-full animate-pulse">
+                                                        NEW
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Snapshot Image */}
+                                            {violation.snapshot_url && (
+                                                <div className="mb-3 rounded-lg overflow-hidden border-2 border-gray-700/50 group-hover:border-red-500/50 transition-colors shadow-lg">
+                                                    <img
+                                                        src={violation.snapshot_url}
+                                                        alt="Violation snapshot"
+                                                        className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+                                                        onError={(e) => {
+                                                            e.target.style.display = 'none';
+                                                        }}
+                                                    />
+                                                </div>
+                                            )}
+
+                                            {/* Details Grid */}
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {violation.metadata?.speed && (
+                                                    <div className="bg-gradient-to-br from-red-900/30 to-red-800/20 rounded-lg px-3 py-2 border border-red-700/30">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-xs text-gray-400 font-medium">Speed</span>
+                                                            <span className="text-red-400 font-bold text-sm">
+                                                                {violation.metadata.speed.toFixed(1)} <span className="text-xs">km/h</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {violation.vehicle_id && (
+                                                    <div className="bg-gradient-to-br from-blue-900/30 to-blue-800/20 rounded-lg px-3 py-2 border border-blue-700/30">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-xs text-gray-400 font-medium">Vehicle ID</span>
+                                                            <span className="text-blue-300 font-bold text-sm">
+                                                                #{violation.vehicle_id}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Confidence Badge */}
+                                            {violation.confidence && (
+                                                <div className="mt-2 flex items-center justify-end">
+                                                    <span className="text-xs text-gray-500">
+                                                        Confidence: <span className="text-green-400 font-semibold">{(violation.confidence * 100).toFixed(0)}%</span>
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-16">
+                                    <div className="w-20 h-20 mx-auto mb-4 bg-gray-800/50 rounded-full flex items-center justify-center border-2 border-dashed border-gray-700">
+                                        <AlertTriangle className="w-10 h-10 text-gray-600" />
+                                    </div>
+                                    <p className="text-gray-400 font-medium text-base mb-1">No violations detected</p>
+                                    {!isRunning && (
+                                        <p className="text-sm text-gray-500 mt-2">Start detection to monitor violations</p>
+                                    )}
+                                    {isRunning && (
+                                        <div className="mt-4 flex items-center justify-center gap-2">
+                                            <Activity className="w-5 h-5 text-blue-400 animate-pulse" />
+                                            <p className="text-sm text-gray-400">Monitoring for violations...</p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
-                    </div>
-
-                    <div className="p-6">
-                        {violations.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {violations.map((violation, index) => (
-                                    <div
-                                        key={violation.id}
-                                        className={`bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-all hover:shadow-lg hover:shadow-red-500/20 border border-gray-600 hover:border-red-500/50 ${
-                                            index < newViolationCount ? 'animate-pulse' : ''
-                                        }`}
-                                    >
-                                        <div className="flex items-start justify-between mb-3">
-                                            <div className="flex items-center space-x-2 flex-1">
-                                                <div className={`w-3 h-3 rounded-full ${getViolationTypeColor(violation.type)} animate-pulse`}></div>
-                                                <span className="font-semibold text-white text-sm">
-                                                    {getViolationTypeLabel(violation.type)}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center space-x-1 text-xs text-gray-400">
-                                                <Clock className="w-3 h-3" />
-                                                <span>{formatTimestamp(violation.timestamp)}</span>
-                                            </div>
-                                        </div>
-
-                                        {violation.snapshot_url && (
-                                            <div className="mb-3 rounded-lg overflow-hidden border-2 border-gray-600">
-                                                <img
-                                                    src={violation.snapshot_url}
-                                                    alt="Violation"
-                                                    className="w-full h-32 object-cover"
-                                                />
-                                            </div>
-                                        )}
-
-                                        <div className="space-y-2 text-sm">
-                                            <div className="flex items-center justify-between bg-gray-800/50 rounded px-2 py-1">
-                                                <span className="text-gray-400 text-xs">Vehicle ID:</span>
-                                                <span className="text-white font-medium text-xs">
-                                                    {violation.vehicle_id || 'N/A'}
-                                                </span>
-                                            </div>
-                                            {violation.metadata?.speed && (
-                                                <div className="flex items-center justify-between bg-gray-800/50 rounded px-2 py-1">
-                                                    <span className="text-gray-400 text-xs">Speed:</span>
-                                                    <span className="text-red-400 font-bold text-xs">
-                                                        {violation.metadata.speed.toFixed(1)} km/h
-                                                    </span>
-                                                </div>
-                                            )}
-                                            {violation.bbox && (
-                                                <div className="flex items-center justify-between bg-gray-800/50 rounded px-2 py-1">
-                                                    <span className="text-gray-400 text-xs">Location:</span>
-                                                    <span className="text-white font-medium text-xs">
-                                                        [{violation.bbox[0]}, {violation.bbox[1]}]
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-12">
-                                <AlertTriangle className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                                <p className="text-gray-400">No violations detected yet</p>
-                                {!isRunning && (
-                                    <p className="text-sm text-gray-500 mt-2">Start detection to monitor violations</p>
-                                )}
-                                {isRunning && (
-                                    <div className="mt-4 flex items-center justify-center space-x-2">
-                                        <Activity className="w-4 h-4 text-gray-500 animate-pulse" />
-                                        <p className="text-sm text-gray-500">Monitoring for violations...</p>
-                                    </div>
-                                )}
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>

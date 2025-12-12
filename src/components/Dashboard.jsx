@@ -68,9 +68,12 @@ export default function Dashboard() {
                             violationType: v.type || 'Unknown',
                             vehicle: 'Vehicle', // Not available in current schema
                             license: 'N/A', // Not available in current schema
-                            status: v.status === 'pending' ? 'Open' : 'Closed'
+                            status: v.status === 'pending' ? 'Open' : 'Closed',
+                            snapshot_url: v.snapshot_url || v.snapshot_url || v.snapshot || null
                         }));
                         setRecentViolations(formatted);
+                        console.log("formatted");
+                        console.log(v.snapshot_url);
                     }
                 }
             } catch (err) {
@@ -242,6 +245,16 @@ export default function Dashboard() {
                                                 </button>
                                             </div>
                                         </div>
+                                    {violation.snapshot_url && (
+                                        <div className="mt-3">
+                                            <img
+                                                src={violation.snapshot_url}
+                                                alt={`${violation.violationType} snapshot`}
+                                                className="w-full max-h-56 object-contain rounded border border-gray-600 bg-black"
+                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                            />
+                                        </div>
+                                    )}
                                         <div className="mt-2 text-sm text-gray-400">
                                             {violation.vehicle} • {violation.license}
                                         </div>

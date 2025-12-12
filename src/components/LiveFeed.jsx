@@ -473,10 +473,10 @@ export default function LiveFeed() {
                                             </div>
                                         </div>
 
-                                        {violation.image && (
+                                        {violation.snapshot_url && (
                                             <div className="mb-3 rounded-lg overflow-hidden border-2 border-gray-600">
                                                 <img
-                                                    src={violation.image}
+                                                    src={violation.snapshot_url}
                                                     alt="Violation"
                                                     className="w-full h-32 object-cover"
                                                 />

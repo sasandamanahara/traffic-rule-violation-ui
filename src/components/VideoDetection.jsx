@@ -749,7 +749,16 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
                               src={violation.snapshot_url}
                               alt={`Snapshot frame ${violation.frame}`}
                               className="w-full h-40 object-cover rounded mb-3 border border-gray-600"
-                              style={{ maxWidth: 320 }}
+                              style={{
+                                height:
+                                    violation.type === "Traffic Light"
+                                    ? "120px"
+                                    : violation.type === "Speed"
+                                    ? "200px"
+                                    : "250px",
+                                width: "auto",
+                                maxWidth: "100%",
+                              }}
                             />
                             <div className="w-full">
                               <p className="text-white font-semibold mb-1">

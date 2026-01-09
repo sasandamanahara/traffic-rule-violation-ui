@@ -776,16 +776,13 @@ export default function VideoDetection({ setActiveTab, setSelectedVideo }) {
                                 Confidence:{" "}
                                 {(violation.confidence * 100).toFixed(2)}%
                               </p>
-                              {violation.type === "Number Plate" && (
-                                <p className="text-blue-400 text-sm mb-1">
-                                  Plate:{" "}
-                                  {violation.plate_text || (
-                                    <span className="italic text-gray-500">
-                                      [not extracted]
-                                    </span>
-                                  )}
+                              {violation.plate_text && (
+                                <p className="text-gray-400 text-sm mb-1">
+                                  Plate Text: {violation.plate_text}
                                 </p>
                               )}
+                              
+                               
                             </div>
                           </div>
                         ))}
